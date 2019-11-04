@@ -9,6 +9,8 @@
 import UIKit
 import AVFoundation
 import Photos
+import CoreImage.CIFilterBuiltins
+
 class ViewController: UIViewController {
     private enum DepthDataDeliveryMode {
         case on
@@ -92,7 +94,6 @@ extension ViewController: AVCapturePhotoCaptureDelegate{
         if let imageData = photo.fileDataRepresentation() {
             // Data型をUIImageオブジェクトに変換
             uiImage = UIImage(data: imageData)!
-//
             // 写真ライブラリに画像を保存
             for semanticSegmentationType in output.enabledSemanticSegmentationMatteTypes {
                 print(maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage())
@@ -110,26 +111,6 @@ extension ViewController{
     func setupCaptureSession() {
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
     }
-
-//    // デバイスの設定
-//    func setupDevice() {
-//        // カメラデバイスのプロパティ設定
-//        let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: AVMediaType.video, position: AVCaptureDevice.Position.unspecified)
-//
-//
-//        // プロパティの条件を満たしたカメラデバイスの取得
-//        let devices = deviceDiscoverySession.devices
-//
-//        for device in devices {
-//            if device.position == AVCaptureDevice.Position.back {
-//                mainCamera = device
-//            } else if device.position == AVCaptureDevice.Position.front {
-//                innerCamera = device
-//            }
-//        }
-//        // 起動時のカメラを設定
-//        currentDevice = innerCamera
-//    }
 
     // 入出力データの設定
     func setupInputOutput() {
@@ -255,14 +236,23 @@ extension ViewController{
     }
 }
 
-import CoreImage.CIFilterBuiltins
 
 @available(iOS 13.0, *)
 class MaskFilterBuiltinsMatte: NSCoder {
     lazy var context = CIContext()
+
     func maskFilterBuiltins(_ photo: AVCapturePhoto,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) -> UIImage? {
-        guard let segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return nil}
+
+        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return nil}
+
+        // Retrieve the photo orientation and apply it to the matte image.
+        if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
+            let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
+            // Apply the Exif orientation to the matte image.
+            segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
+        }
         var imageOption: CIImageOption!
+
         switch ssmType {
         case .hair:
             imageOption = .auxiliarySemanticSegmentationHairMatte
@@ -275,9 +265,8 @@ class MaskFilterBuiltinsMatte: NSCoder {
             break
         }
 
-            let ciImage = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [imageOption: true])
         
-            let base = CIImage(image: image)
+            let base = CIImage(image: image.updateImageOrientionUpSide()!)
             let maxcomp = CIFilter.maximumComponent()
             maxcomp.inputImage = base
             var makeup = maxcomp.outputImage
@@ -297,19 +286,45 @@ class MaskFilterBuiltinsMatte: NSCoder {
             blend.backgroundImage = base
             blend.inputImage = makeup
             blend.maskImage = matte
-
+    
             let result = blend.outputImage
 
-            guard let outputImage = result else { return nil}
+        guard let outputImage = result else { return nil}
+        
+        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return nil}
+        
+        // Create a new CIImage from the matte's underlying CVPixelBuffer.
+        let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
+                               options: [imageOption: true,
+                                         .colorSpace: perceptualColorSpace])
         
         // Get the HEIF representation of this image.
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
             let imageData = context.heifRepresentation(of: outputImage,
                                                        format: .RGBA8,
                                                        colorSpace: linearColorSpace,
-                                                       options: [.depthImage: ciImage]) else { return nil}
-        
+                                                       options: [.depthImage: ciImage]) else { return nil }
+
         
         return UIImage(data: imageData)
+    }
+}
+
+// Image extension
+extension UIImage {
+
+    func updateImageOrientionUpSide() -> UIImage? {
+        if self.imageOrientation == .up {
+            return self
+        }
+
+        UIGraphicsBeginImageContextWithOptions(self.size, false, self.scale)
+        self.draw(in: CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height))
+        if let normalizedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext() {
+            UIGraphicsEndImageContext()
+            return normalizedImage
+        }
+        UIGraphicsEndImageContext()
+        return nil
     }
 }
