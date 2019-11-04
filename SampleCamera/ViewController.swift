@@ -96,10 +96,10 @@ extension ViewController: AVCapturePhotoCaptureDelegate{
             uiImage = UIImage(data: imageData)!
             // 写真ライブラリに画像を保存
             for semanticSegmentationType in output.enabledSemanticSegmentationMatteTypes {
-                print(maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage())
-                imageView.image = maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage()
-                imageView.contentMode = .scaleAspectFill
-                self.view.addSubview(imageView)
+//                imageView.image = maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage()
+//                imageView.contentMode = .scaleAspectFill
+//                self.view.addSubview(imageView)
+                
                 UIImageWriteToSavedPhotosAlbum( maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage(), nil,nil,nil)
             }
         }
@@ -246,7 +246,8 @@ class MaskFilterBuiltinsMatte: NSCoder {
     func maskFilterBuiltins(_ photo: AVCapturePhoto,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) -> UIImage? {
 
         guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return nil}
-
+        let base = CIImage(image: image.updateImageOrientionUpSide()!)
+        
         // Retrieve the photo orientation and apply it to the matte image.
         if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
@@ -266,17 +267,28 @@ class MaskFilterBuiltinsMatte: NSCoder {
             print("This semantic segmentation type is not supported!")
             break
         }
+        let maxcomp1 = CIFilter.maximumComponent()
+        maxcomp1.inputImage = base
+        var makeup1 = maxcomp1.outputImage
+        let gamma1 = CIFilter.gammaAdjust()
+        gamma1.inputImage = base
+        gamma1.power = 0.65
+        makeup1 = gamma1.outputImage
         
-        let base = CIImage(image: image.updateImageOrientionUpSide()!)
         let maxcomp = CIFilter.maximumComponent()
-        maxcomp.inputImage = base
+        maxcomp.inputImage = makeup1
         var makeup = maxcomp.outputImage
-        let gamma = CIFilter.gammaAdjust()
-        gamma.inputImage = makeup
-        gamma.power = 0.5
+        let gamma = CIFilter.colorMatrix()
+        gamma.inputImage = makeup1
+        // RGBの変換値を作成.
+        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputRVector")
+        gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
+        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBVector")
+        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
+        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
         makeup = gamma.outputImage
 
-        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationSkinMatte: true])
+        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [imageOption : true])
 
         guard let baseImage = base else { return nil}
         let scale = CGAffineTransform(scaleX: baseImage.extent.size.width / matte.extent.size.width,
@@ -287,24 +299,26 @@ class MaskFilterBuiltinsMatte: NSCoder {
         blend.backgroundImage = base
         blend.inputImage = makeup
         blend.maskImage = matte
-
         let result = blend.outputImage
-
         guard let outputImage = result else { return nil}
 
+        
+        
+        
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return nil}
-
         // Create a new CIImage from the matte's underlying CVPixelBuffer.
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
                                options: [imageOption: true,
                                          .colorSpace: perceptualColorSpace])
-        
+    
         // Get the HEIF representation of this image.
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
-            let imageData = context.heifRepresentation(of: outputImage,
+            let imageData = context.pngRepresentation(of: outputImage,
                                                        format: .RGBA8,
                                                        colorSpace: linearColorSpace,
-                                                       options: [.depthImage: ciImage]) else { return nil }
+                                                       options: [.semanticSegmentationSkinMatteImage : ciImage,
+                                                                 .semanticSegmentationHairMatteImage : ciImage,
+                                                                 .semanticSegmentationTeethMatteImage: ciImage,]) else { return nil }
         
 
         return UIImage(data: imageData)
@@ -329,3 +343,25 @@ extension UIImage {
         return nil
     }
 }
+
+//        let sp = CGColorSpace(name:CGColorSpace.genericRGBLinear)!
+//               let comps : [CGFloat] = [0.121569, 0.129412, 0.156863, 1]
+//               let c = CGColor(colorSpace: sp, components: comps)!
+//               let sp2 = CGColorSpace(name:CGColorSpace.sRGB)!
+//               let c2 = c.converted(to: sp2, intent: .relativeColorimetric, options: nil)!
+//               let color = UIColor(cgColor: c2)
+              
+//        // 顔の色が変わる　髪の色が変わる
+//        let colorParameters = [
+//            "inputColor0": CIColor(color: UIColor.yellow.withAlphaComponent(1)), // Foreground
+//            "inputColor1": CIColor(color: UIColor.clear.withAlphaComponent(1)),// Background
+//        ]
+//        let colored = base?.applyingFilter("CIFalseColor", parameters: colorParameters)
+//
+
+//        let sp = CGColorSpace(name:CGColorSpace.genericRGBLinear)!
+//        let comps : [CGFloat] = [0.121569, 0.129412, 0.156863, 1]
+//        let c = CGColor(colorSpace: sp, components: comps)!
+//        let sp2 = CGColorSpace(name:CGColorSpace.sRGB)!
+//        let c2 = c.converted(to: sp2, intent: .relativeColorimetric, options: nil)!
+//        let color = UIColor(cgColor: c2)
