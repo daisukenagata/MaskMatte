@@ -98,6 +98,7 @@ extension ViewController: AVCapturePhotoCaptureDelegate{
             for semanticSegmentationType in output.enabledSemanticSegmentationMatteTypes {
                 print(maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage())
                 imageView.image = maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage()
+                imageView.contentMode = .scaleAspectFill
                 self.view.addSubview(imageView)
                 UIImageWriteToSavedPhotosAlbum( maskPortraitMatte.maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage(), nil,nil,nil)
             }
@@ -239,6 +240,7 @@ extension ViewController{
 
 @available(iOS 13.0, *)
 class MaskFilterBuiltinsMatte: NSCoder {
+
     lazy var context = CIContext()
 
     func maskFilterBuiltins(_ photo: AVCapturePhoto,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) -> UIImage? {
@@ -264,35 +266,34 @@ class MaskFilterBuiltinsMatte: NSCoder {
             print("This semantic segmentation type is not supported!")
             break
         }
-
         
-            let base = CIImage(image: image.updateImageOrientionUpSide()!)
-            let maxcomp = CIFilter.maximumComponent()
-            maxcomp.inputImage = base
-            var makeup = maxcomp.outputImage
-            let gamma = CIFilter.gammaAdjust()
-            gamma.inputImage = makeup
-            gamma.power = 0.5
-            makeup = gamma.outputImage
+        let base = CIImage(image: image.updateImageOrientionUpSide()!)
+        let maxcomp = CIFilter.maximumComponent()
+        maxcomp.inputImage = base
+        var makeup = maxcomp.outputImage
+        let gamma = CIFilter.gammaAdjust()
+        gamma.inputImage = makeup
+        gamma.power = 0.5
+        makeup = gamma.outputImage
 
-            var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationSkinMatte: true])
+        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationSkinMatte: true])
 
-            guard let baseImage = base else { return nil}
-            let scale = CGAffineTransform(scaleX: baseImage.extent.size.width / matte.extent.size.width,
-                                          y: baseImage.extent.size.height / matte.extent.size.height)
-            matte = matte.transformed( by: scale )
+        guard let baseImage = base else { return nil}
+        let scale = CGAffineTransform(scaleX: baseImage.extent.size.width / matte.extent.size.width,
+                                      y: baseImage.extent.size.height / matte.extent.size.height)
+        matte = matte.transformed( by: scale )
 
-            let blend = CIFilter.blendWithMask()
-            blend.backgroundImage = base
-            blend.inputImage = makeup
-            blend.maskImage = matte
-    
-            let result = blend.outputImage
+        let blend = CIFilter.blendWithMask()
+        blend.backgroundImage = base
+        blend.inputImage = makeup
+        blend.maskImage = matte
+
+        let result = blend.outputImage
 
         guard let outputImage = result else { return nil}
-        
+
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return nil}
-        
+
         // Create a new CIImage from the matte's underlying CVPixelBuffer.
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
                                options: [imageOption: true,
@@ -304,20 +305,20 @@ class MaskFilterBuiltinsMatte: NSCoder {
                                                        format: .RGBA8,
                                                        colorSpace: linearColorSpace,
                                                        options: [.depthImage: ciImage]) else { return nil }
-
         
+
         return UIImage(data: imageData)
     }
 }
 
 // Image extension
 extension UIImage {
-
+    
     func updateImageOrientionUpSide() -> UIImage? {
         if self.imageOrientation == .up {
             return self
         }
-
+        
         UIGraphicsBeginImageContextWithOptions(self.size, false, self.scale)
         self.draw(in: CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height))
         if let normalizedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext() {
