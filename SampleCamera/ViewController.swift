@@ -28,21 +28,43 @@ class ViewController: UIViewController {
     
     let maskPortraitMatte = MaskFilterBuiltinsMatte()
     
- 
-    // シャッターボタン
-    @IBOutlet weak var cameraButton: UIButton!
+    static func identifier() -> String { return String(describing: ViewController.self) }
+    
+      static func viewController() -> ViewController {
 
+          let sb = UIStoryboard(name: "Main", bundle: nil)
+          let vc = sb.instantiateInitialViewController() as! ViewController
+
+          return vc
+      }
+
+      init() {
+          super.init(nibName: "Main", bundle: Bundle.main)
+      }
+
+      required init?(coder aDecoder: NSCoder) {
+          super.init(coder: aDecoder)
+      }
+
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCaptureSession()
         self.setupInputOutput()
         setupPreviewLayer()
-         maskPortraitMatte.captureSession.startRunning()
-        styleCaptureButton()
+        maskPortraitMatte.captureSession.startRunning()
+
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
+
+        let xibView = SliiderObjects(frame: CGRect(x: 0, y: view.frame.height - 300, width: view.frame.width, height: 200))
+        view.addSubview(xibView)
     }
 
     // シャッターボタンが押された時のアクション
-    @IBAction func cameraButton_TouchUpInside(_ sender: Any) {
+    func cameraButton_TouchUpInside(_ sender: Any) {
         maskPortraitMatte.cameraAction()
     }
 
@@ -63,13 +85,5 @@ extension ViewController{
     // カメラのプレビューを表示するレイヤの設定
     func setupPreviewLayer() {
         maskPortraitMatte.setupPreviewLayer(view)
-    }
-
-    // ボタンのスタイルを設定
-    func styleCaptureButton() {
-        cameraButton.layer.borderColor = UIColor.white.cgColor
-        cameraButton.layer.borderWidth = 5
-        cameraButton.clipsToBounds = true
-        cameraButton.layer.cornerRadius = min(cameraButton.frame.width, cameraButton.frame.height) / 2
     }
 }

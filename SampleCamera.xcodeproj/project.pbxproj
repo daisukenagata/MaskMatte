@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		BB4B1A642371004500242644 /* MaskFilterBuiltinsMatte.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */; };
+		BB4B1A7123714C6900242644 /* SliiderObjects.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4B1A6F23714C6900242644 /* SliiderObjects.swift */; };
+		BB4B1A7223714C6900242644 /* SliiderObjects.xib in Resources */ = {isa = PBXBuildFile; fileRef = BB4B1A7023714C6900242644 /* SliiderObjects.xib */; };
+		BB4B1A7423714C7500242644 /* TabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4B1A7323714C7500242644 /* TabBarController.swift */; };
 		BB568E2D236E9F7C00EB38F5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB568E2C236E9F7C00EB38F5 /* AppDelegate.swift */; };
 		BB568E2F236E9F7C00EB38F5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */; };
 		BB568E31236E9F7C00EB38F5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB568E30236E9F7C00EB38F5 /* ViewController.swift */; };
@@ -18,6 +21,9 @@
 
 /* Begin PBXFileReference section */
 		BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskFilterBuiltinsMatte.swift; sourceTree = "<group>"; };
+		BB4B1A6F23714C6900242644 /* SliiderObjects.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SliiderObjects.swift; sourceTree = "<group>"; };
+		BB4B1A7023714C6900242644 /* SliiderObjects.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SliiderObjects.xib; sourceTree = "<group>"; };
+		BB4B1A7323714C7500242644 /* TabBarController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarController.swift; sourceTree = "<group>"; };
 		BB568E29236E9F7C00EB38F5 /* SampleCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB568E2C236E9F7C00EB38F5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -62,6 +68,9 @@
 				BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */,
 				BB568E30236E9F7C00EB38F5 /* ViewController.swift */,
 				BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */,
+				BB4B1A7323714C7500242644 /* TabBarController.swift */,
+				BB4B1A6F23714C6900242644 /* SliiderObjects.swift */,
+				BB4B1A7023714C6900242644 /* SliiderObjects.xib */,
 				BB568E32236E9F7C00EB38F5 /* Main.storyboard */,
 				BB568E35236E9F8000EB38F5 /* Assets.xcassets */,
 				BB568E37236E9F8000EB38F5 /* LaunchScreen.storyboard */,
@@ -129,6 +138,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BB568E39236E9F8000EB38F5 /* LaunchScreen.storyboard in Resources */,
+				BB4B1A7223714C6900242644 /* SliiderObjects.xib in Resources */,
 				BB568E36236E9F8000EB38F5 /* Assets.xcassets in Resources */,
 				BB568E34236E9F7C00EB38F5 /* Main.storyboard in Resources */,
 			);
@@ -143,6 +153,8 @@
 			files = (
 				BB568E31236E9F7C00EB38F5 /* ViewController.swift in Sources */,
 				BB568E2D236E9F7C00EB38F5 /* AppDelegate.swift in Sources */,
+				BB4B1A7123714C6900242644 /* SliiderObjects.swift in Sources */,
+				BB4B1A7423714C7500242644 /* TabBarController.swift in Sources */,
 				BB568E2F236E9F7C00EB38F5 /* SceneDelegate.swift in Sources */,
 				BB4B1A642371004500242644 /* MaskFilterBuiltinsMatte.swift in Sources */,
 			);
