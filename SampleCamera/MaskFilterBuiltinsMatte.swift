@@ -173,10 +173,10 @@ class MaskFilterBuiltinsMatte: NSObject {
 
     func maskFilterBuiltins(_ bind: @escaping (_ image: UIImage?) -> Void ,photo: AVCapturePhoto ,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) {
 
-        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
-        let base = CIImage(image: image.updateImageOrientionUpSide())
+        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType),
+            let base = CIImage(image: image.updateImageOrientionUpSide()) else { return }
         photos = photo
-        based = base!
+        based = base
         // Retrieve the photo orientation and apply it to the matte image.
         if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
@@ -219,9 +219,8 @@ class MaskFilterBuiltinsMatte: NSObject {
 
         var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [imageOption : true])
 
-        guard let baseImage = base else { return }
-        let scale = CGAffineTransform(scaleX: baseImage.extent.size.width / matte.extent.size.width,
-                                      y: baseImage.extent.size.height / matte.extent.size.height)
+        let scale = CGAffineTransform(scaleX: base.extent.size.width / matte.extent.size.width,
+                                      y: base.extent.size.height / matte.extent.size.height)
         matte = matte.transformed( by: scale )
 
         let blend = CIFilter.blendWithMask()
@@ -272,13 +271,15 @@ class MaskFilterBuiltinsMatte: NSObject {
                              value2: Float,
                              value3: Float,
                              value4: Float,
-                             photo: AVCapturePhoto, ssmType: AVSemanticSegmentationMatte.MatteType, imageView: UIImageView) {
+                             photo: AVCapturePhoto?,
+                             ssmType: AVSemanticSegmentationMatte.MatteType?, imageView: UIImageView) {
 
-        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
+        guard let ssmType = ssmType else { return }
+        guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
         let base = based
 
         // Retrieve the photo orientation and apply it to the matte image.
-        if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
+        if let orientation = photo?.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
             // Apply the Exif orientation to the matte image.
             segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
@@ -340,15 +341,15 @@ extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
     
     // 撮影した画像データが生成されたときに呼び出されるデリゲートメソッド
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
-        var uiImage = UIImage()
+        var uiImage: UIImage?
         if let imageData = photo.fileDataRepresentation() {
             // Data型をUIImageオブジェクトに変換
-            uiImage = UIImage(data: imageData)!
+            uiImage = UIImage(data: imageData)
             // 写真ライブラリに画像を保存
             for semanticSegmentationTypes in output.enabledSemanticSegmentationMatteTypes {
                 if semanticSegmentationTypes == .hair {
                     semanticSegmentationType = semanticSegmentationTypes
-                    maskFilterBuiltins(disMiss(image:), photo: photo, ssmType: semanticSegmentationType!, image: uiImage)
+                    maskFilterBuiltins(disMiss(image:), photo: photo, ssmType: semanticSegmentationType!, image: uiImage ?? UIImage())
                     
                     
 //                    maskFilterBuiltins(<#() -> Void#>, photo: photo, ssmType:semanticSegmentationType,  image: uiImage)

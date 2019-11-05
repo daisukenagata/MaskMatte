@@ -71,8 +71,8 @@ class ViewController: UIViewController {
                                                   value2: xibView.sliderInputGVector.value,
                                                   value3: xibView.sliderInputBVector.value,
                                                   value4: xibView.sliderInputAVector.value,
-                                                  photo: maskPortraitMatte.photos ?? AVCapturePhoto().`self`(),
-                                                  ssmType: maskPortraitMatte.semanticSegmentationType!,
+                                                  photo: maskPortraitMatte.photos,
+                                                  ssmType: maskPortraitMatte.semanticSegmentationType,
                                                   imageView: xibView.sliderImageView)
         }
     }
