@@ -15,7 +15,7 @@ class ViewController: UIViewController {
     let maskPortraitMatte = MaskFilterBuiltinsMatte()
 
     var callBack = { () -> Void in }
-    
+
     let xibView = SliiderObjects()
 
     static func identifier() -> String { return String(describing: ViewController.self) }
@@ -30,7 +30,7 @@ class ViewController: UIViewController {
     init() {
         super.init(nibName: "Main", bundle: Bundle.main)
     }
-    
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
