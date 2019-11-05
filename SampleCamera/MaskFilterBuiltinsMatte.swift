@@ -210,11 +210,10 @@ class MaskFilterBuiltinsMatte: NSObject {
         let gamma = CIFilter.colorMatrix()
         gamma.inputImage = makeup1
         // RGBの変換値を作成.
-        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputRVector")
+        gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputRVector")
         gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
-        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBVector")
+        gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputBVector")
         gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 0), forKey: "inputBiasVector")
         makeup = gamma.outputImage
 
         var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [imageOption : true])
