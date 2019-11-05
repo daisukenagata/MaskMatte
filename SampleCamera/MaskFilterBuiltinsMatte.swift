@@ -231,7 +231,7 @@ class MaskFilterBuiltinsMatte: NSObject {
     }
     
 
-    func maskFilterBuiltins2(value : Float,
+    func maskFilterBuiltinsChanges(value : Float,
                              value2: Float,
                              value3: Float,
                              value4: Float,

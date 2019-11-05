@@ -7,10 +7,9 @@
 //
 
 import UIKit
-import AVFoundation
 import Photos
+import AVFoundation
 
-@available(iOS 13.0, *)
 class ViewController: UIViewController {
 
     let maskPortraitMatte = MaskFilterBuiltinsMatte()
@@ -67,13 +66,13 @@ class ViewController: UIViewController {
             self.view.addSubview(self.xibView)
             }
         } else {
-            maskPortraitMatte.maskFilterBuiltins2(value : xibView.sliderInputRVector.value,
-                                                  value2: xibView.sliderInputGVector.value,
-                                                  value3: xibView.sliderInputBVector.value,
-                                                  value4: xibView.sliderInputAVector.value,
-                                                  photo: maskPortraitMatte.photos,
-                                                  ssmType: maskPortraitMatte.semanticSegmentationType,
-                                                  imageView: xibView.sliderImageView)
+            maskPortraitMatte.maskFilterBuiltinsChanges(value : xibView.sliderInputRVector.value,
+                                                        value2: xibView.sliderInputGVector.value,
+                                                        value3: xibView.sliderInputBVector.value,
+                                                        value4: xibView.sliderInputAVector.value,
+                                                        photo: maskPortraitMatte.photos,
+                                                        ssmType: maskPortraitMatte.semanticSegmentationType,
+                                                        imageView: xibView.sliderImageView)
         }
     }
 }
