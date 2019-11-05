@@ -78,15 +78,12 @@ class ViewController: UIViewController {
     }
 }
 
-//MARK: カメラ設定メソッド
 extension ViewController{
-    // カメラの画質の設定
+
     func setupCaptureSession() { maskPortraitMatte.captureSession.sessionPreset = AVCaptureSession.Preset.photo }
 
-    // 入出力データの設定
     func setupInputOutput() { maskPortraitMatte.setupInputOutput() }
 
-    // カメラのプレビューを表示するレイヤの設定
     func setupPreviewLayer() {
         let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
         view.addSubview(d)

@@ -30,7 +30,6 @@ class MaskFilterBuiltinsMatte: NSObject {
     private var photoQualityPrioritizationMode: AVCapturePhotoOutput.QualityPrioritization = .balanced
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
                                                                                   mediaType: .video, position: .unspecified)
-    
 
     func setupPreviewLayer(_ view: UIView) {
         self.cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
@@ -244,10 +243,9 @@ class MaskFilterBuiltinsMatte: NSObject {
         guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
         let base = based
 
-        // Retrieve the photo orientation and apply it to the matte image.
         if let orientation = photo?.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
-            // Apply the Exif orientation to the matte image.
+
             segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
         }
 
@@ -265,7 +263,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         let gamma = CIFilter.colorMatrix()
         gamma.inputImage = makeup1
 
-        // RGBの変換値を作成.
         gamma.setValue(CIVector(x: 0, y: CGFloat(value2), z: 0, w: 0), forKey: "inputRVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value3), z: 0, w: 0), forKey: "inputGVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value4), z: 0, w: 0), forKey: "inputBVector")
@@ -286,12 +283,10 @@ class MaskFilterBuiltinsMatte: NSObject {
         guard let outputImage = result else { return }
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
 
-        // Create a new CIImage from the matte's underlying CVPixelBuffer.
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
                                options: [.auxiliarySemanticSegmentationHairMatte: true,
                                          .colorSpace: perceptualColorSpace])
 
-        // Get the HEIF representation of this image.
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
             let imagedata = context.pngRepresentation(of: outputImage,
                                                       format: .RGBA8,
@@ -302,16 +297,15 @@ class MaskFilterBuiltinsMatte: NSObject {
     }
 }
 
-//MARK: AVCapturePhotoCaptureDelegateデリゲートメソッド
+//MARK: AVCapturePhotoCaptureDelegate
 extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
     
-    // 撮影した画像データが生成されたときに呼び出されるデリゲートメソッド
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         var uiImage: UIImage?
         if let imageData = photo.fileDataRepresentation() {
-            // Data型をUIImageオブジェクトに変換
+
             uiImage = UIImage(data: imageData)
-            // 写真ライブラリに画像を保存
+
             for semanticSegmentationTypes in output.enabledSemanticSegmentationMatteTypes {
                 if semanticSegmentationTypes == .hair {
                     semanticSegmentationType = semanticSegmentationTypes
