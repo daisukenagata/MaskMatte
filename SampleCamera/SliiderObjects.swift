@@ -31,6 +31,11 @@ class SliiderObjects: UIView {
             sliderInputAVector.value = 1.0
         }
     }
+    @IBOutlet weak var sliderInputBiasVector: UISlider!{
+        didSet {
+            sliderInputBiasVector.value = 1.0
+        }
+    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -59,4 +64,5 @@ class SliiderObjects: UIView {
     
     @IBAction func sliderInputAVector(_ sender: UISlider) { sliderInputAVector.value = sender.value }
     
+    @IBAction func sliderInputBiasVector(_ sender: UISlider) { sliderInputBiasVector.value = sender.value }
 }

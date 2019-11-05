@@ -272,6 +272,7 @@ class MaskFilterBuiltinsMatte: NSObject {
                              value2: Float,
                              value3: Float,
                              value4: Float,
+                             value5: Float,
                              photo: AVCapturePhoto, ssmType: AVSemanticSegmentationMatte.MatteType, imageView: UIImageView) {
 
         guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
@@ -301,6 +302,7 @@ class MaskFilterBuiltinsMatte: NSObject {
         gamma.setValue(CIVector(x: 0, y: CGFloat(value2), z: 0, w: 0), forKey: "inputRVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value3), z: 0, w: 0), forKey: "inputGVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value4), z: 0, w: 0), forKey: "inputBVector")
+        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: CGFloat(value5)), forKey: "inputAVector")
         makeup = gamma.outputImage
         
         var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
