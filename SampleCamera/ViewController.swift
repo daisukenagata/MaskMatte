@@ -14,8 +14,7 @@ import Photos
 class ViewController: UIViewController {
 
     let maskPortraitMatte = MaskFilterBuiltinsMatte()
-    
-    
+
     var callBack = { () -> Void in }
     
     let xibView = SliiderObjects()
@@ -63,7 +62,7 @@ class ViewController: UIViewController {
         maskPortraitMatte.cameraAction { image in
             self.xibView.sliderImageView.contentMode = .scaleAspectFit
             self.xibView.sliderImageView.image = image
-            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height-100)
+            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height-144)
             self.view.addSubview(self.xibView)
             }
         } else {
@@ -86,5 +85,9 @@ extension ViewController{
     func setupInputOutput() { maskPortraitMatte.setupInputOutput() }
 
     // カメラのプレビューを表示するレイヤの設定
-    func setupPreviewLayer() { maskPortraitMatte.setupPreviewLayer(view) }
+    func setupPreviewLayer() {
+        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height-144))
+        view.addSubview(d)
+        maskPortraitMatte.setupPreviewLayer(d)
+    }
 }

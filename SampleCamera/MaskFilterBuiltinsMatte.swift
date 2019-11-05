@@ -358,9 +358,7 @@ extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
         }
     }
     
-    func disMiss(image: UIImage?) {
-        call(image)
-    }
+    func disMiss(image: UIImage?) { call(image) }
 }
 
 // Image extension
