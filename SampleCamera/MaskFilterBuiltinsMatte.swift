@@ -13,53 +13,33 @@ import CoreImage.CIFilterBuiltins
 @available(iOS 13.0, *)
 class MaskFilterBuiltinsMatte: NSObject {
 
-    lazy var context = CIContext()
-        private enum DepthDataDeliveryMode {
-        case on
-        case off
-    }
-    private enum PortraitEffectsMatteDeliveryMode {
-        case on
-        case off
-    }
-    private var depthDataDeliveryMode: DepthDataDeliveryMode = .off
-    private var portraitEffectsMatteDeliveryMode: PortraitEffectsMatteDeliveryMode = .off
-    
-    private var photoQualityPrioritizationMode: AVCapturePhotoOutput.QualityPrioritization = .balanced
     @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
-
-    var call = { (_ image: UIImage?) -> Void in }
-    var semanticSegmentationType: AVSemanticSegmentationMatte.MatteType?
-    var photos: AVCapturePhoto?
-    var based = CIImage()
-    // デバイスからの入力と出力を管理するオブジェクトの作成
-    var captureSession = AVCaptureSession()
-    // カメラデバイスそのものを管理するオブジェクトの作成
-    // メインカメラの管理オブジェクトの作成
-    var mainCamera: AVCaptureDevice?
-    // インカメの管理オブジェクトの作成
-    var innerCamera: AVCaptureDevice?
-    // 現在使用しているカメラデバイスの管理オブジェクトの作成
-    var currentDevice: AVCaptureDevice?
-    // キャプチャーの出力データを受け付けるオブジェクト
-    var photoOutput : AVCapturePhotoOutput?
-    // プレビュー表示用のレイヤ
+    var call               = { (_ image: UIImage?) -> Void in }
+    var based              = CIImage()
+    var captureSession     = AVCaptureSession()
+    var photos             : AVCapturePhoto?
+    var mainCamera         : AVCaptureDevice?
+    var innerCamera        : AVCaptureDevice?
+    var currentDevice      : AVCaptureDevice?
+    var photoOutput        : AVCapturePhotoOutput?
     var cameraPreviewLayer : AVCaptureVideoPreviewLayer?
-    
+    var semanticSegmentationType: AVSemanticSegmentationMatte.MatteType?
+
+    lazy var context = CIContext()
+
+    private var photoQualityPrioritizationMode: AVCapturePhotoOutput.QualityPrioritization = .balanced
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
                                                                                   mediaType: .video, position: .unspecified)
     
+
     func setupPreviewLayer(_ view: UIView) {
-        // 指定したAVCaptureSessionでプレビューレイヤを初期化
-              self.cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-              // プレビューレイヤが、カメラのキャプチャーを縦横比を維持した状態で、表示するように設定
-              self.cameraPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-              // プレビューレイヤの表示の向きを設定
-              self.cameraPreviewLayer?.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
-              
-              self.cameraPreviewLayer?.frame = view.frame
-              view.layer.insertSublayer(self.cameraPreviewLayer!, at: 0)
+        self.cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        self.cameraPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        self.cameraPreviewLayer?.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
+        self.cameraPreviewLayer?.frame = view.frame
+        view.layer.insertSublayer(self.cameraPreviewLayer ?? AVCaptureVideoPreviewLayer(), at: 0)
     }
+
     func cameraAction(_ callBack: @escaping (_ image: UIImage?) -> Void){
         var settings = AVCapturePhotoSettings()
         settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
