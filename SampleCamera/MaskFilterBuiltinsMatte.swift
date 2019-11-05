@@ -29,6 +29,9 @@ class MaskFilterBuiltinsMatte: NSObject {
     @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
 
     var call = { (_ image: UIImage?) -> Void in }
+    var semanticSegmentationType: AVSemanticSegmentationMatte.MatteType?
+    var photos: AVCapturePhoto?
+    var based = CIImage()
     // デバイスからの入力と出力を管理するオブジェクトの作成
     var captureSession = AVCaptureSession()
     // カメラデバイスそのものを管理するオブジェクトの作成
@@ -172,7 +175,8 @@ class MaskFilterBuiltinsMatte: NSObject {
 
         guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
         let base = CIImage(image: image.updateImageOrientionUpSide()!)
-        
+        photos = photo
+        based = base!
         // Retrieve the photo orientation and apply it to the matte image.
         if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
@@ -262,6 +266,73 @@ class MaskFilterBuiltinsMatte: NSObject {
         }
         return nil
     }
+    
+
+    func maskFilterBuiltins2(value : Float,
+                             value2: Float,
+                             value3: Float,
+                             value4: Float,
+                             photo: AVCapturePhoto, ssmType: AVSemanticSegmentationMatte.MatteType, imageView: UIImageView) {
+
+        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
+        let base = based
+
+        // Retrieve the photo orientation and apply it to the matte image.
+        if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
+            let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
+            // Apply the Exif orientation to the matte image.
+            segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
+        }
+
+        let maxcomp1 = CIFilter.maximumComponent()
+        maxcomp1.inputImage = base
+        var makeup1 = maxcomp1.outputImage
+        let gamma1 = CIFilter.gammaAdjust()
+        gamma1.inputImage = base
+        gamma1.power = value
+        makeup1 = gamma1.outputImage
+        
+        let maxcomp = CIFilter.maximumComponent()
+        maxcomp.inputImage = makeup1
+        var makeup = maxcomp.outputImage
+        let gamma = CIFilter.colorMatrix()
+        gamma.inputImage = makeup1
+        // RGBの変換値を作成.
+        gamma.setValue(CIVector(x: 0, y: CGFloat(value2), z: 0, w: 0), forKey: "inputRVector")
+        gamma.setValue(CIVector(x: 0, y: CGFloat(value3), z: 0, w: 0), forKey: "inputGVector")
+        gamma.setValue(CIVector(x: 0, y: CGFloat(value4), z: 0, w: 0), forKey: "inputBVector")
+        makeup = gamma.outputImage
+        
+        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
+
+        let scale = CGAffineTransform(scaleX: based.extent.size.width / matte.extent.size.width,
+                                      y: based.extent.size.height / matte.extent.size.height)
+        matte = matte.transformed( by: scale )
+        
+        let blend = CIFilter.blendWithMask()
+        blend.backgroundImage = base
+        blend.inputImage = makeup
+        blend.maskImage = matte
+        let result = blend.outputImage
+        guard let outputImage = result else { return }
+        
+        
+        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
+        // Create a new CIImage from the matte's underlying CVPixelBuffer.
+        let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
+                               options: [.auxiliarySemanticSegmentationHairMatte: true,
+                                         .colorSpace: perceptualColorSpace])
+        
+        // Get the HEIF representation of this image.
+        guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
+            let imagedata = context.pngRepresentation(of: outputImage,
+                                                      format: .RGBA8,
+                                                      colorSpace: linearColorSpace,
+                                                      options: [ .semanticSegmentationHairMatteImage : ciImage,]) else { return }
+                                                        
+        imageView.image = UIImage(data: imagedata)
+        imageView.setNeedsDisplay()
+    }
 }
 
 //MARK: AVCapturePhotoCaptureDelegateデリゲートメソッド
@@ -274,9 +345,10 @@ extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
             // Data型をUIImageオブジェクトに変換
             uiImage = UIImage(data: imageData)!
             // 写真ライブラリに画像を保存
-            for semanticSegmentationType in output.enabledSemanticSegmentationMatteTypes {
-                if semanticSegmentationType == .hair {
-                  maskFilterBuiltins(disMiss(image:), photo: photo, ssmType: semanticSegmentationType, image: uiImage)
+            for semanticSegmentationTypes in output.enabledSemanticSegmentationMatteTypes {
+                if semanticSegmentationTypes == .hair {
+                    semanticSegmentationType = semanticSegmentationTypes
+                    maskFilterBuiltins(disMiss(image:), photo: photo, ssmType: semanticSegmentationType!, image: uiImage)
                     
                     
 //                    maskFilterBuiltins(<#() -> Void#>, photo: photo, ssmType:semanticSegmentationType,  image: uiImage)
@@ -309,3 +381,7 @@ extension UIImage {
         return nil
     }
 }
+
+
+
+
