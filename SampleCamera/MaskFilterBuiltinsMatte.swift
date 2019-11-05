@@ -45,42 +45,29 @@ class MaskFilterBuiltinsMatte: NSObject {
         settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
         settings.flashMode = .auto
         settings.isHighResolutionPhotoEnabled = true
-        
         settings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: settings.__availablePreviewPhotoPixelFormatTypes.first!]
-        
         settings.isDepthDataDeliveryEnabled = true
         settings.isPortraitEffectsMatteDeliveryEnabled = true
         if !(self.photoOutput?.enabledSemanticSegmentationMatteTypes.isEmpty)! {
-            settings.enabledSemanticSegmentationMatteTypes = self.photoOutput!.enabledSemanticSegmentationMatteTypes
+            settings.enabledSemanticSegmentationMatteTypes = self.photoOutput?.enabledSemanticSegmentationMatteTypes ?? [AVSemanticSegmentationMatte.MatteType]()
         }
         
-        
         settings.photoQualityPrioritization = self.photoQualityPrioritizationMode
-        
-        //AVCapturePhotoCaptureDelegate
-        // 撮影された画像をdelegateメソッドで処理maskPortraitMatte
         photoOutput?.capturePhoto(with: settings, delegate: self)
-        
+
         call = callBack
     }
 
-    // 入出力データの設定
     func setupInputOutput() {
-        // 出力データを受け取るオブジェクトの作成
         photoOutput = AVCapturePhotoOutput()
         guard let photoOutput = photoOutput else { return }
         do {
             captureSession.beginConfiguration()
-            
             captureSession.sessionPreset = .photo
-            
-            // カメラデバイスのプロパティ設定
+
             let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: AVMediaType.video, position: AVCaptureDevice.Position.unspecified)
-            
-            
-            // プロパティの条件を満たしたカメラデバイスの取得
+
             let devices = deviceDiscoverySession.devices
-            
             for device in devices {
                 if device.position == AVCaptureDevice.Position.back {
                     currentDevice = self.cameraWithPosition(.front)!
@@ -88,16 +75,15 @@ class MaskFilterBuiltinsMatte: NSObject {
                     currentDevice = self.cameraWithPosition(.back)!
                 }
             }
-            
-            
+
             guard let videoDevice = currentDevice else { return }
             videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-            
+
             if captureSession.canAddInput(videoDeviceInput) { captureSession.addInput(videoDeviceInput) }
-            
+
             currentDevice = AVCaptureDevice.default(for: .audio)
             let captureDeviceInput = try AVCaptureDeviceInput(device: currentDevice!)
-            
+
             if captureSession.canAddInput(captureDeviceInput) {
                 captureSession.addInput(captureDeviceInput)
             } else {
@@ -108,9 +94,8 @@ class MaskFilterBuiltinsMatte: NSObject {
         }
         
         if captureSession.canAddOutput(photoOutput) {
-            // 指定した入力をセッションに追加
             captureSession.addOutput(photoOutput)
-            
+
             photoOutput.isHighResolutionCaptureEnabled = true
             photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
             photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
@@ -119,6 +104,7 @@ class MaskFilterBuiltinsMatte: NSObject {
             photoOutput.maxPhotoQualityPrioritization = .quality
             captureSession.commitConfiguration()
         }
+
         var newVideoDevice: AVCaptureDevice? = nil
         let devices = self.videoDeviceDiscoverySession.devices
         if let device = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera }) {
@@ -126,6 +112,7 @@ class MaskFilterBuiltinsMatte: NSObject {
         } else if let device = devices.first(where: { $0.position == .front }) {
             newVideoDevice = device
         }
+
         if let videoDevice = newVideoDevice {
             do {
                 let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
@@ -157,10 +144,9 @@ class MaskFilterBuiltinsMatte: NSObject {
             let base = CIImage(image: image.updateImageOrientionUpSide()) else { return }
         photos = photo
         based = base
-        // Retrieve the photo orientation and apply it to the matte image.
+
         if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
-            // Apply the Exif orientation to the matte image.
             segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
         }
         var imageOption: CIImageOption!
@@ -176,6 +162,7 @@ class MaskFilterBuiltinsMatte: NSObject {
             print("This semantic segmentation type is not supported!")
             break
         }
+
         let maxcomp1 = CIFilter.maximumComponent()
         maxcomp1.inputImage = base
         var makeup1 = maxcomp1.outputImage
@@ -183,13 +170,13 @@ class MaskFilterBuiltinsMatte: NSObject {
         gamma1.inputImage = base
         gamma1.power = 0.65
         makeup1 = gamma1.outputImage
-        
+
         let maxcomp = CIFilter.maximumComponent()
         maxcomp.inputImage = makeup1
         var makeup = maxcomp.outputImage
         let gamma = CIFilter.colorMatrix()
         gamma.inputImage = makeup1
-        // RGBの変換値を作成.
+
         gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputRVector")
         gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
         gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputBVector")
@@ -213,12 +200,11 @@ class MaskFilterBuiltinsMatte: NSObject {
         
         
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
-        // Create a new CIImage from the matte's underlying CVPixelBuffer.
+
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
                                options: [imageOption: true,
                                          .colorSpace: perceptualColorSpace])
-    
-        // Get the HEIF representation of this image.
+
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
             let imagedata = context.pngRepresentation(of: outputImage,
                                                   format: .RGBA8,
@@ -329,27 +315,20 @@ extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
             for semanticSegmentationTypes in output.enabledSemanticSegmentationMatteTypes {
                 if semanticSegmentationTypes == .hair {
                     semanticSegmentationType = semanticSegmentationTypes
-                    maskFilterBuiltins(disMiss(image:), photo: photo, ssmType: semanticSegmentationType!, image: uiImage ?? UIImage())
-                    
-                    
-//                    maskFilterBuiltins(<#() -> Void#>, photo: photo, ssmType:semanticSegmentationType,  image: uiImage)
-//                UIImageWriteToSavedPhotosAlbum( maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage(), nil,nil,nil)
+                    maskFilterBuiltins(callBack(image:), photo: photo, ssmType: semanticSegmentationType!, image: uiImage ?? UIImage())
                 }
             }
         }
     }
-    
-    func disMiss(image: UIImage?) { call(image) }
+    func callBack(image: UIImage?) { call(image) }
 }
 
 // Image extension
 extension UIImage {
-    
     func updateImageOrientionUpSide() -> UIImage {
         if self.imageOrientation == .up {
             return self
         }
-        
         UIGraphicsBeginImageContextWithOptions(self.size, false, self.scale)
         self.draw(in: CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height))
         if let normalizedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext() {
