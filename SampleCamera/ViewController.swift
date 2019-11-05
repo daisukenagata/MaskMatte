@@ -60,17 +60,18 @@ class ViewController: UIViewController {
     @objc func btAction() {
         if self.xibView.sliderImageView.image == nil {
         maskPortraitMatte.cameraAction { image in
+            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
             self.xibView.sliderImageView.contentMode = .scaleAspectFit
             self.xibView.sliderImageView.image = image
-            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
+            self.xibView.sliderImageView.frame.origin.y = 0
             self.view.addSubview(self.xibView)
             }
         } else {
-            maskPortraitMatte.maskFilterBuiltins2(value : self.xibView.sliderInputRVector.value,
-                                                  value2: self.xibView.sliderInputGVector.value,
-                                                  value3: self.xibView.sliderInputBVector.value,
-                                                  value4: self.xibView.sliderInputAVector.value,
-                                                  photo: maskPortraitMatte.photos!,
+            maskPortraitMatte.maskFilterBuiltins2(value : xibView.sliderInputRVector.value,
+                                                  value2: xibView.sliderInputGVector.value,
+                                                  value3: xibView.sliderInputBVector.value,
+                                                  value4: xibView.sliderInputAVector.value,
+                                                  photo: maskPortraitMatte.photos ?? AVCapturePhoto().`self`(),
                                                   ssmType: maskPortraitMatte.semanticSegmentationType!,
                                                   imageView: xibView.sliderImageView)
         }

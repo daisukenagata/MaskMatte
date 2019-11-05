@@ -171,10 +171,10 @@ class MaskFilterBuiltinsMatte: NSObject {
         }
     }
 
-    func maskFilterBuiltins(_ bind: @escaping (_ image: UIImage?) -> Void ,photo: AVCapturePhoto,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) {
+    func maskFilterBuiltins(_ bind: @escaping (_ image: UIImage?) -> Void ,photo: AVCapturePhoto ,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) {
 
         guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
-        let base = CIImage(image: image.updateImageOrientionUpSide()!)
+        let base = CIImage(image: image.updateImageOrientionUpSide())
         photos = photo
         based = base!
         // Retrieve the photo orientation and apply it to the matte image.
@@ -364,7 +364,7 @@ extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
 // Image extension
 extension UIImage {
     
-    func updateImageOrientionUpSide() -> UIImage? {
+    func updateImageOrientionUpSide() -> UIImage {
         if self.imageOrientation == .up {
             return self
         }
@@ -376,7 +376,7 @@ extension UIImage {
             return normalizedImage
         }
         UIGraphicsEndImageContext()
-        return nil
+        return UIImage()
     }
 }
 
