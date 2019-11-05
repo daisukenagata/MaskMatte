@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BB4B1A642371004500242644 /* MaskFilterBuiltinsMatte.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */; };
 		BB568E2D236E9F7C00EB38F5 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB568E2C236E9F7C00EB38F5 /* AppDelegate.swift */; };
 		BB568E2F236E9F7C00EB38F5 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */; };
 		BB568E31236E9F7C00EB38F5 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB568E30236E9F7C00EB38F5 /* ViewController.swift */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MaskFilterBuiltinsMatte.swift; sourceTree = "<group>"; };
 		BB568E29236E9F7C00EB38F5 /* SampleCamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SampleCamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB568E2C236E9F7C00EB38F5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 				BB568E2C236E9F7C00EB38F5 /* AppDelegate.swift */,
 				BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */,
 				BB568E30236E9F7C00EB38F5 /* ViewController.swift */,
+				BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */,
 				BB568E32236E9F7C00EB38F5 /* Main.storyboard */,
 				BB568E35236E9F8000EB38F5 /* Assets.xcassets */,
 				BB568E37236E9F8000EB38F5 /* LaunchScreen.storyboard */,
@@ -141,6 +144,7 @@
 				BB568E31236E9F7C00EB38F5 /* ViewController.swift in Sources */,
 				BB568E2D236E9F7C00EB38F5 /* AppDelegate.swift in Sources */,
 				BB568E2F236E9F7C00EB38F5 /* SceneDelegate.swift in Sources */,
+				BB4B1A642371004500242644 /* MaskFilterBuiltinsMatte.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
