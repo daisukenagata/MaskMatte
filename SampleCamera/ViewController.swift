@@ -62,14 +62,15 @@ class ViewController: UIViewController {
         maskPortraitMatte.cameraAction { image in
             self.xibView.sliderImageView.contentMode = .scaleAspectFit
             self.xibView.sliderImageView.image = image
-            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height-144)
+            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
             self.view.addSubview(self.xibView)
             }
         } else {
             maskPortraitMatte.maskFilterBuiltins2(value : self.xibView.sliderInputRVector.value,
                                                   value2: self.xibView.sliderInputGVector.value,
                                                   value3: self.xibView.sliderInputBVector.value,
-                                                  value4: self.xibView.sliderInputAVector.value,                                       photo: maskPortraitMatte.photos!,
+                                                  value4: self.xibView.sliderInputAVector.value,
+                                                  photo: maskPortraitMatte.photos!,
                                                   ssmType: maskPortraitMatte.semanticSegmentationType!,
                                                   imageView: xibView.sliderImageView)
         }
@@ -86,7 +87,7 @@ extension ViewController{
 
     // カメラのプレビューを表示するレイヤの設定
     func setupPreviewLayer() {
-        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height-144))
+        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
         view.addSubview(d)
         maskPortraitMatte.setupPreviewLayer(d)
     }
