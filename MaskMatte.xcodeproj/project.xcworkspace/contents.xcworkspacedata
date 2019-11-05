@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:SampleCamera.xcodeproj">
+      location = "self:/Users/nagatadaisuke/SampleCamera/MaskMatte.xcodeproj">
    </FileRef>
 </Workspace>
