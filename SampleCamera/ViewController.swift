@@ -70,9 +70,7 @@ class ViewController: UIViewController {
             maskPortraitMatte.maskFilterBuiltins2(value : self.xibView.sliderInputRVector.value,
                                                   value2: self.xibView.sliderInputGVector.value,
                                                   value3: self.xibView.sliderInputBVector.value,
-                                                  value4: self.xibView.sliderInputAVector.value,
-                                                  value5: self.xibView.sliderInputBiasVector.value,
-                                                  photo: maskPortraitMatte.photos!,
+                                                  value4: self.xibView.sliderInputAVector.value,                                       photo: maskPortraitMatte.photos!,
                                                   ssmType: maskPortraitMatte.semanticSegmentationType!,
                                                   imageView: xibView.sliderImageView)
         }
