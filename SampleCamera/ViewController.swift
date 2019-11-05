@@ -12,78 +12,71 @@ import Photos
 
 @available(iOS 13.0, *)
 class ViewController: UIViewController {
-    private enum DepthDataDeliveryMode {
-        case on
-        case off
-    }
-    private enum PortraitEffectsMatteDeliveryMode {
-        case on
-        case off
-    }
-    private var depthDataDeliveryMode: DepthDataDeliveryMode = .off
-    private var portraitEffectsMatteDeliveryMode: PortraitEffectsMatteDeliveryMode = .off
-    
-    private var photoQualityPrioritizationMode: AVCapturePhotoOutput.QualityPrioritization = .balanced
-    @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
-    
+
     let maskPortraitMatte = MaskFilterBuiltinsMatte()
     
+    
+    var callBack = { () -> Void in }
+    
+    let xibView = SliiderObjects()
+
     static func identifier() -> String { return String(describing: ViewController.self) }
+
+    static func viewController() -> ViewController {
+
+        let sb = UIStoryboard(name: "Main", bundle: nil)
+        let vc = sb.instantiateInitialViewController() as! ViewController
+        return vc
+    }
+
+    init() {
+        super.init(nibName: "Main", bundle: Bundle.main)
+    }
     
-      static func viewController() -> ViewController {
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
 
-          let sb = UIStoryboard(name: "Main", bundle: nil)
-          let vc = sb.instantiateInitialViewController() as! ViewController
-
-          return vc
-      }
-
-      init() {
-          super.init(nibName: "Main", bundle: Bundle.main)
-      }
-
-      required init?(coder aDecoder: NSCoder) {
-          super.init(coder: aDecoder)
-      }
-
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+
         setupCaptureSession()
-        self.setupInputOutput()
+        setupInputOutput()
         setupPreviewLayer()
         maskPortraitMatte.captureSession.startRunning()
-
+        
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
 
-        let xibView = SliiderObjects(frame: CGRect(x: 0, y: view.frame.height - 300, width: view.frame.width, height: 200))
-        view.addSubview(xibView)
+        let bt = UIButton()
+        bt.frame = CGRect(x: (self.tabBarController?.tabBar.frame.width ?? 0.0) / 2 - 25,
+                          y: (self.tabBarController?.tabBar.frame.height ?? 0.0) / 2 - 25, width: 50, height: 50)
+        bt.backgroundColor = .red
+        self.tabBarController?.tabBar.addSubview(bt)
+        bt.layer.cornerRadius = bt.frame.height/2
+        bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
     }
 
-    // シャッターボタンが押された時のアクション
-    func cameraButton_TouchUpInside(_ sender: Any) {
-        maskPortraitMatte.cameraAction()
+    @objc func btAction() {
+        maskPortraitMatte.cameraAction { image in
+            self.xibView.sliderImageView.contentMode = .scaleAspectFit
+            self.xibView.sliderImageView.image = image
+            self.xibView.frame = CGRect(x: 0, y: 64, width: self.view.frame.width, height: self.view.frame.height-100)
+            self.view.addSubview(self.xibView)
+        }
     }
-
 }
 
 //MARK: カメラ設定メソッド
 extension ViewController{
     // カメラの画質の設定
-    func setupCaptureSession() {
-        maskPortraitMatte.captureSession.sessionPreset = AVCaptureSession.Preset.photo
-    }
+    func setupCaptureSession() { maskPortraitMatte.captureSession.sessionPreset = AVCaptureSession.Preset.photo }
 
     // 入出力データの設定
-    func setupInputOutput() {
-        maskPortraitMatte.setupInputOutput()
-    }
+    func setupInputOutput() { maskPortraitMatte.setupInputOutput() }
 
     // カメラのプレビューを表示するレイヤの設定
-    func setupPreviewLayer() {
-        maskPortraitMatte.setupPreviewLayer(view)
-    }
+    func setupPreviewLayer() { maskPortraitMatte.setupPreviewLayer(view) }
 }

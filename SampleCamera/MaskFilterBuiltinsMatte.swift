@@ -27,6 +27,8 @@ class MaskFilterBuiltinsMatte: NSObject {
     
     private var photoQualityPrioritizationMode: AVCapturePhotoOutput.QualityPrioritization = .balanced
     @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
+
+    var call = { (_ image: UIImage?) -> Void in }
     // デバイスからの入力と出力を管理するオブジェクトの作成
     var captureSession = AVCaptureSession()
     // カメラデバイスそのものを管理するオブジェクトの作成
@@ -55,26 +57,28 @@ class MaskFilterBuiltinsMatte: NSObject {
               self.cameraPreviewLayer?.frame = view.frame
               view.layer.insertSublayer(self.cameraPreviewLayer!, at: 0)
     }
-    func cameraAction(){
+    func cameraAction(_ callBack: @escaping (_ image: UIImage?) -> Void){
         var settings = AVCapturePhotoSettings()
-              settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
-              settings.flashMode = .auto
-              settings.isHighResolutionPhotoEnabled = true
-              
-              settings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: settings.__availablePreviewPhotoPixelFormatTypes.first!]
-              
-              settings.isDepthDataDeliveryEnabled = true
-              settings.isPortraitEffectsMatteDeliveryEnabled = true
-              if !(self.photoOutput?.enabledSemanticSegmentationMatteTypes.isEmpty)! {
-                  settings.enabledSemanticSegmentationMatteTypes = self.photoOutput!.enabledSemanticSegmentationMatteTypes
-              }
-              
-              
-              settings.photoQualityPrioritization = self.photoQualityPrioritizationMode
-              
-              //AVCapturePhotoCaptureDelegate
-              // 撮影された画像をdelegateメソッドで処理maskPortraitMatte
-              photoOutput?.capturePhoto(with: settings, delegate: self)
+        settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
+        settings.flashMode = .auto
+        settings.isHighResolutionPhotoEnabled = true
+        
+        settings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: settings.__availablePreviewPhotoPixelFormatTypes.first!]
+        
+        settings.isDepthDataDeliveryEnabled = true
+        settings.isPortraitEffectsMatteDeliveryEnabled = true
+        if !(self.photoOutput?.enabledSemanticSegmentationMatteTypes.isEmpty)! {
+            settings.enabledSemanticSegmentationMatteTypes = self.photoOutput!.enabledSemanticSegmentationMatteTypes
+        }
+        
+        
+        settings.photoQualityPrioritization = self.photoQualityPrioritizationMode
+        
+        //AVCapturePhotoCaptureDelegate
+        // 撮影された画像をdelegateメソッドで処理maskPortraitMatte
+        photoOutput?.capturePhoto(with: settings, delegate: self)
+        
+        call = callBack
     }
 
     // 入出力データの設定
@@ -164,9 +168,9 @@ class MaskFilterBuiltinsMatte: NSObject {
         }
     }
 
-    func maskFilterBuiltins(_ photo: AVCapturePhoto,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) -> UIImage? {
+    func maskFilterBuiltins(_ bind: @escaping (_ image: UIImage?) -> Void ,photo: AVCapturePhoto,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) {
 
-        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return nil}
+        guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType) else { return }
         let base = CIImage(image: image.updateImageOrientionUpSide()!)
         
         // Retrieve the photo orientation and apply it to the matte image.
@@ -211,7 +215,7 @@ class MaskFilterBuiltinsMatte: NSObject {
 
         var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [imageOption : true])
 
-        guard let baseImage = base else { return nil}
+        guard let baseImage = base else { return }
         let scale = CGAffineTransform(scaleX: baseImage.extent.size.width / matte.extent.size.width,
                                       y: baseImage.extent.size.height / matte.extent.size.height)
         matte = matte.transformed( by: scale )
@@ -221,12 +225,12 @@ class MaskFilterBuiltinsMatte: NSObject {
         blend.inputImage = makeup
         blend.maskImage = matte
         let result = blend.outputImage
-        guard let outputImage = result else { return nil}
+        guard let outputImage = result else { return }
 
         
         
         
-        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return nil}
+        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
         // Create a new CIImage from the matte's underlying CVPixelBuffer.
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
                                options: [imageOption: true,
@@ -234,15 +238,14 @@ class MaskFilterBuiltinsMatte: NSObject {
     
         // Get the HEIF representation of this image.
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
-            let imageData = context.pngRepresentation(of: outputImage,
-                                                       format: .RGBA8,
-                                                       colorSpace: linearColorSpace,
-                                                       options: [.semanticSegmentationSkinMatteImage : ciImage,
-                                                                 .semanticSegmentationHairMatteImage : ciImage,
-                                                                 .semanticSegmentationTeethMatteImage: ciImage,]) else { return nil }
+            let imagedata = context.pngRepresentation(of: outputImage,
+                                                  format: .RGBA8,
+                                                  colorSpace: linearColorSpace,
+                                                  options: [.semanticSegmentationSkinMatteImage : ciImage,
+                                                            .semanticSegmentationHairMatteImage : ciImage,
+                                                            .semanticSegmentationTeethMatteImage: ciImage,]) else { return }
         
-
-        return UIImage(data: imageData)
+        bind(UIImage(data: imagedata))
     }
 
     func cameraWithPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {
@@ -263,6 +266,7 @@ class MaskFilterBuiltinsMatte: NSObject {
 
 //MARK: AVCapturePhotoCaptureDelegateデリゲートメソッド
 extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
+    
     // 撮影した画像データが生成されたときに呼び出されるデリゲートメソッド
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         var uiImage = UIImage()
@@ -271,9 +275,19 @@ extension MaskFilterBuiltinsMatte: AVCapturePhotoCaptureDelegate{
             uiImage = UIImage(data: imageData)!
             // 写真ライブラリに画像を保存
             for semanticSegmentationType in output.enabledSemanticSegmentationMatteTypes {
-                UIImageWriteToSavedPhotosAlbum( maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage(), nil,nil,nil)
+                if semanticSegmentationType == .hair {
+                  maskFilterBuiltins(disMiss(image:), photo: photo, ssmType: semanticSegmentationType, image: uiImage)
+                    
+                    
+//                    maskFilterBuiltins(<#() -> Void#>, photo: photo, ssmType:semanticSegmentationType,  image: uiImage)
+//                UIImageWriteToSavedPhotosAlbum( maskFilterBuiltins(photo, ssmType:semanticSegmentationType,  image: uiImage) ?? UIImage(), nil,nil,nil)
+                }
             }
         }
+    }
+    
+    func disMiss(image: UIImage?) {
+        call(image)
     }
 }
 

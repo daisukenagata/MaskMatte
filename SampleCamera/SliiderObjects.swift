@@ -9,6 +9,8 @@
 import UIKit
 
 class SliiderObjects: UIView {
+    
+    @IBOutlet weak var sliderImageView: UIImageView!
 
     override init(frame: CGRect) {
         super.init(frame: frame)
