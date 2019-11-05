@@ -271,7 +271,8 @@ class MaskFilterBuiltinsMatte: NSObject {
                              value3: Float,
                              value4: Float,
                              photo: AVCapturePhoto?,
-                             ssmType: AVSemanticSegmentationMatte.MatteType?, imageView: UIImageView) {
+                             ssmType: AVSemanticSegmentationMatte.MatteType?,
+                             imageView: UIImageView) {
 
         guard let ssmType = ssmType else { return }
         guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
@@ -291,21 +292,21 @@ class MaskFilterBuiltinsMatte: NSObject {
         gamma1.inputImage = base
         gamma1.power = value
         makeup1 = gamma1.outputImage
-        
+
         let maxcomp = CIFilter.maximumComponent()
         maxcomp.inputImage = makeup1
         var makeup = maxcomp.outputImage
         let gamma = CIFilter.colorMatrix()
         gamma.inputImage = makeup1
+
         // RGBの変換値を作成.
         gamma.setValue(CIVector(x: 0, y: CGFloat(value2), z: 0, w: 0), forKey: "inputRVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value3), z: 0, w: 0), forKey: "inputGVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value4), z: 0, w: 0), forKey: "inputBVector")
         gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
         makeup = gamma.outputImage
-        
-        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
 
+        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
         let scale = CGAffineTransform(scaleX: based.extent.size.width / matte.extent.size.width,
                                       y: based.extent.size.height / matte.extent.size.height)
         matte = matte.transformed( by: scale )
@@ -315,22 +316,22 @@ class MaskFilterBuiltinsMatte: NSObject {
         blend.inputImage = makeup
         blend.maskImage = matte
         let result = blend.outputImage
+
         guard let outputImage = result else { return }
-        
-        
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
+
         // Create a new CIImage from the matte's underlying CVPixelBuffer.
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
                                options: [.auxiliarySemanticSegmentationHairMatte: true,
                                          .colorSpace: perceptualColorSpace])
-        
+
         // Get the HEIF representation of this image.
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
             let imagedata = context.pngRepresentation(of: outputImage,
                                                       format: .RGBA8,
                                                       colorSpace: linearColorSpace,
                                                       options: [ .semanticSegmentationHairMatteImage : ciImage,]) else { return }
-                                                        
+
         imageView.image = UIImage(data: imagedata)
     }
 }
@@ -379,7 +380,3 @@ extension UIImage {
         return UIImage()
     }
 }
-
-
-
-
