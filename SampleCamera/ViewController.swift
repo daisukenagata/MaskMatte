@@ -14,28 +14,10 @@ import Photos
 class ViewController: UIViewController {
 
     let maskPortraitMatte = MaskFilterBuiltinsMatte()
-    
-    
+
     var callBack = { () -> Void in }
     
     let xibView = SliiderObjects()
-
-    static func identifier() -> String { return String(describing: ViewController.self) }
-
-    static func viewController() -> ViewController {
-
-        let sb = UIStoryboard(name: "Main", bundle: nil)
-        let vc = sb.instantiateInitialViewController() as! ViewController
-        return vc
-    }
-
-    init() {
-        super.init(nibName: "Main", bundle: Bundle.main)
-    }
-    
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,7 +45,7 @@ class ViewController: UIViewController {
         maskPortraitMatte.cameraAction { image in
             self.xibView.sliderImageView.contentMode = .scaleAspectFit
             self.xibView.sliderImageView.image = image
-            self.xibView.frame = CGRect(x: 0, y: 64, width: self.view.frame.width, height: self.view.frame.height-100)
+            self.xibView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height-100)
             self.view.addSubview(self.xibView)
             }
         } else {

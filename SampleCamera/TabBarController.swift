@@ -10,13 +10,9 @@ import UIKit
 
 class TabBarController: UITabBarController {
 
-    private var statusBarStyle : UIStatusBarStyle = .default
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.viewControllers = TabBarController.viewControllers()
-        
         UITabBar.appearance().tintColor = UIColor.black
         let item = UITabBarItem.appearance()
         item.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 0)
@@ -24,31 +20,6 @@ class TabBarController: UITabBarController {
         self.tabBar.frame.size = self.tabBar.sizeThatFits(CGSize(width: self.tabBar.frame.height, height: 100))
     }
 
-
-    static func viewControllers() -> [UIViewController] {
-
-        let vi = ViewController.viewController()
-        vi.view.backgroundColor = UIColor.white
-        let opc = UINavigationController(rootViewController: vi)
-        return [opc]
-    }
-}
-
-extension TabBarController{
-
-    override var shouldAutorotate : Bool { return true }
-
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-
-        guard let selectedVC = self.selectedViewController  else { return UIInterfaceOrientationMask.portrait }
-
-        guard let navigation = selectedVC as? UINavigationController else { return UIInterfaceOrientationMask.portrait }
-
-        guard let current = navigation.viewControllers.last else { return UIInterfaceOrientationMask.portrait }
-
-        if current is ViewController { return UIInterfaceOrientationMask.all }
-        return.portrait
-    }
 }
 
 extension UITabBar {

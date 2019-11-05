@@ -332,7 +332,6 @@ class MaskFilterBuiltinsMatte: NSObject {
                                                       options: [ .semanticSegmentationHairMatteImage : ciImage,]) else { return }
                                                         
         imageView.image = UIImage(data: imagedata)
-        imageView.setNeedsDisplay()
     }
 }
 

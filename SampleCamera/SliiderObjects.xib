@@ -21,13 +21,13 @@
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <subviews>
                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="plW-oY-n3h">
-                    <rect key="frame" x="0.0" y="0.0" width="414" height="414"/>
+                    <rect key="frame" x="0.0" y="0.0" width="414" height="650"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="414" id="sjT-H7-Iia"/>
+                        <constraint firstAttribute="height" constant="650" id="sjT-H7-Iia"/>
                     </constraints>
                 </imageView>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="25" translatesAutoresizingMaskIntoConstraints="NO" id="hvN-Xp-84Y">
-                    <rect key="frame" x="0.0" y="435" width="414" height="194"/>
+                    <rect key="frame" x="0.0" y="436" width="414" height="194"/>
                     <subviews>
                         <slider opaque="NO" contentMode="scaleToFill" verticalHuggingPriority="249" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" translatesAutoresizingMaskIntoConstraints="NO" id="xzA-YW-4tI">
                             <rect key="frame" x="-2" y="0.0" width="418" height="31"/>
@@ -61,12 +61,14 @@
             </subviews>
             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="plW-oY-n3h" secondAttribute="trailing" id="St7-4a-TJl"/>
-                <constraint firstItem="plW-oY-n3h" firstAttribute="leading" secondItem="yeq-Pa-960" secondAttribute="leading" id="XOZ-Vd-Gdy"/>
+                <constraint firstItem="plW-oY-n3h" firstAttribute="leading" secondItem="yeq-Pa-960" secondAttribute="leading" id="8Ig-kO-2Gg"/>
+                <constraint firstAttribute="trailing" secondItem="plW-oY-n3h" secondAttribute="trailing" id="GVi-a5-Blq"/>
                 <constraint firstItem="plW-oY-n3h" firstAttribute="top" secondItem="yeq-Pa-960" secondAttribute="top" id="Y0u-7j-owj"/>
+                <constraint firstItem="hvN-Xp-84Y" firstAttribute="top" secondItem="yeq-Pa-960" secondAttribute="top" constant="436" id="awM-EN-ReX"/>
                 <constraint firstItem="hvN-Xp-84Y" firstAttribute="leading" secondItem="yeq-Pa-960" secondAttribute="leading" id="kJP-j1-ou2"/>
+                <constraint firstAttribute="bottom" secondItem="plW-oY-n3h" secondAttribute="bottom" id="ksu-fZ-fr0"/>
                 <constraint firstAttribute="trailing" secondItem="hvN-Xp-84Y" secondAttribute="trailing" id="vca-pY-lPC"/>
-                <constraint firstItem="hvN-Xp-84Y" firstAttribute="top" secondItem="plW-oY-n3h" secondAttribute="bottom" constant="21" id="xp6-in-GfW"/>
+                <constraint firstItem="plW-oY-n3h" firstAttribute="top" secondItem="yeq-Pa-960" secondAttribute="top" id="yGc-0z-Tey"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <point key="canvasLocation" x="721.73913043478262" y="120.53571428571428"/>
