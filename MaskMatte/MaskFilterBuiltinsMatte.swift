@@ -45,6 +45,7 @@ class MaskFilterBuiltinsMatte: NSObject {
         settings.isHighResolutionPhotoEnabled = true
         settings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: settings.__availablePreviewPhotoPixelFormatTypes.first!]
         settings.isDepthDataDeliveryEnabled = true
+        settings.isDepthDataDeliveryEnabled = true
         settings.isPortraitEffectsMatteDeliveryEnabled = true
         if !(self.photoOutput?.enabledSemanticSegmentationMatteTypes.isEmpty)! {
             settings.enabledSemanticSegmentationMatteTypes = self.photoOutput?.enabledSemanticSegmentationMatteTypes ?? [AVSemanticSegmentationMatte.MatteType]()
@@ -126,6 +127,7 @@ class MaskFilterBuiltinsMatte: NSObject {
         let base = based
         let imagedata = matteSetting(value: value, value2: value2, value3: value3, value4: value4, base: base, ssm: segmentationMatte)
         imageView.image = UIImage(data: imagedata)
+        UIImageWriteToSavedPhotosAlbum(imageView.image!, nil,nil,nil)
     }
 
     private func maskFilterBuiltins(_ bind : @escaping (_ image: UIImage?) -> Void,
