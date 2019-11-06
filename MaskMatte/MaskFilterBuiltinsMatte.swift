@@ -22,6 +22,8 @@ class MaskFilterBuiltinsMatte: NSObject {
     private var call                    = { (_ image: UIImage?) -> Void in }
     private var captureSession          = AVCaptureSession()
     private var based                   = CIImage()
+    private var bView                   : ButtonView? = nil
+    private var xibView                 : SliiderObjects? = nil
     private var mainCamera              : AVCaptureDevice?
     private var innerCamera             : AVCaptureDevice?
     private var currentDevice           : AVCaptureDevice?
@@ -31,8 +33,12 @@ class MaskFilterBuiltinsMatte: NSObject {
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
                                                                                   mediaType: .video, position: .unspecified)
 
-    private var bView: ButtonView? = nil
-    var xibView: SliiderObjects? = nil
+    func setMaskFilter(view: UIView) {
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+        setupInputOutput()
+        setupPreviewLayer(view)
+        captureSession.startRunning()
+    }
 
     func btAction(view: UIView) {
         if self.xibView?.sliderImageView.image == nil {
@@ -54,13 +60,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         }
     }
 
-    func setMaskFilter(view: UIView) {
-        captureSession.sessionPreset = AVCaptureSession.Preset.photo
-        setupInputOutput()
-        setupPreviewLayer(view)
-        captureSession.startRunning()
-    }
-
     func cameraAction(_ callBack: @escaping (_ image: UIImage?) -> Void){
         var settings = AVCapturePhotoSettings()
         settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
@@ -73,19 +72,21 @@ class MaskFilterBuiltinsMatte: NSObject {
         if !(self.photoOutput?.enabledSemanticSegmentationMatteTypes.isEmpty)! {
             settings.enabledSemanticSegmentationMatteTypes = self.photoOutput?.enabledSemanticSegmentationMatteTypes ?? [AVSemanticSegmentationMatte.MatteType]()
         }
-        
+
         settings.photoQualityPrioritization = self.photoQualityPrioritizationMode
         photoOutput?.capturePhoto(with: settings, delegate: self)
 
         call = callBack
     }
 
-    func matteSetting(value    : Float? = nil,
-                      value2   : Float? = nil,
-                      value3   : Float? = nil,
-                      value4   : Float? = nil,
-                      base     : CIImage,
-                      ssm      : AVSemanticSegmentationMatte) -> Data {
+    func uIImageWriteToSavedPhotosAlbum() { UIImageWriteToSavedPhotosAlbum(xibView?.sliderImageView.image ?? UIImage(), nil,nil,nil) }
+
+    private func matteSetting(value    : Float? = nil,
+                              value2   : Float? = nil,
+                              value3   : Float? = nil,
+                              value4   : Float? = nil,
+                              base     : CIImage,
+                              ssm      : AVSemanticSegmentationMatte) -> Data {
         let maxcomp1 = CIFilter.maximumComponent()
         maxcomp1.inputImage = base
         var makeup1 = maxcomp1.outputImage
@@ -132,30 +133,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         return imagedata
     }
 
-    func maskFilterBuiltinsChanges(value    : Float? = nil,
-                                   value2   : Float? = nil,
-                                   value3   : Float? = nil,
-                                   value4   : Float? = nil,
-                                   photo    : AVCapturePhoto?,
-                                   ssmType  : AVSemanticSegmentationMatte.MatteType?,
-                                   imageView: UIImageView) {
-
-        guard let ssmType = ssmType else { return }
-        guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
-        if let orientation = photo?.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
-            let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
-
-            segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
-        }
-        let base = based
-        let imagedata = matteSetting(value: value, value2: value2, value3: value3, value4: value4, base: base, ssm: segmentationMatte)
-        imageView.image = UIImage(data: imagedata)
-    }
-
-    func uIImageWriteToSavedPhotosAlbum(imageView: UIImageView) {
-        UIImageWriteToSavedPhotosAlbum(imageView.image ?? UIImage(), nil,nil,nil)
-    }
-
     private func maskFilterBuiltins(_ bind : @escaping (_ image: UIImage?) -> Void,
                                     value  : Float? = nil,
                                     value2 : Float? = nil,
@@ -176,6 +153,26 @@ class MaskFilterBuiltinsMatte: NSObject {
         photos = photo
         let imagedata = matteSetting(base: base, ssm: segmentationMatte)
         bind(UIImage(data: imagedata))
+    }
+
+    private func maskFilterBuiltinsChanges(value    : Float? = nil,
+                                           value2   : Float? = nil,
+                                           value3   : Float? = nil,
+                                           value4   : Float? = nil,
+                                           photo    : AVCapturePhoto?,
+                                           ssmType  : AVSemanticSegmentationMatte.MatteType?,
+                                           imageView: UIImageView) {
+
+        guard let ssmType = ssmType else { return }
+        guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
+        if let orientation = photo?.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
+            let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
+            
+            segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
+        }
+        let base = based
+        let imagedata = matteSetting(value: value, value2: value2, value3: value3, value4: value4, base: base, ssm: segmentationMatte)
+        imageView.image = UIImage(data: imagedata)
     }
 
     private func cameraWithPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {

@@ -21,28 +21,27 @@ class ViewController: UIViewController {
         return vc
     }
 
+    private var bView            : ButtonView? = nil
     private var maskPortraitMatte: MaskFilterBuiltinsMatte? = nil
-
-    private var bView: ButtonView? = nil
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
 
         maskPortraitMatte = MaskFilterBuiltinsMatte()
         bView = ButtonView(frame: self.tabBarController?.tabBar.frame ?? CGRect())
-
         let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
-        view.addSubview(d)
 
         self.tabBarController?.tabBar.addSubview(bView?.bt ?? UIButton())
         self.tabBarController?.tabBar.addSubview(bView?.bt2 ?? UIButton())
-        maskPortraitMatte?.setMaskFilter(view: d)
 
         bView?.bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
         bView?.bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
+
+        view.addSubview(d)
+        maskPortraitMatte?.setMaskFilter(view: d)
     }
 
     @objc func btAction() { maskPortraitMatte?.btAction(view: self.view) }
 
-    @objc func cameraAction() { maskPortraitMatte?.uIImageWriteToSavedPhotosAlbum(imageView: maskPortraitMatte?.xibView?.sliderImageView ?? UIImageView()) }
+    @objc func cameraAction() { maskPortraitMatte?.uIImageWriteToSavedPhotosAlbum() }
 }
