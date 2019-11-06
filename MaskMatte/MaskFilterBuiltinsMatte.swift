@@ -39,14 +39,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         captureSession.startRunning()
     }
 
-    func setupPreviewLayer(_ view: UIView) {
-        self.cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        self.cameraPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-        self.cameraPreviewLayer?.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
-        self.cameraPreviewLayer?.frame = view.frame
-        view.layer.insertSublayer(self.cameraPreviewLayer ?? AVCaptureVideoPreviewLayer(), at: 0)
-    }
-
     func cameraAction(_ callBack: @escaping (_ image: UIImage?) -> Void){
         var settings = AVCapturePhotoSettings()
         settings = AVCapturePhotoSettings(format: [AVVideoCodecKey: AVVideoCodecType.hevc])
@@ -65,86 +57,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         call = callBack
     }
 
-    func setupInputOutput() {
-        photoOutput = AVCapturePhotoOutput()
-        guard let photoOutput = photoOutput else { return }
-        do {
-            captureSession.beginConfiguration()
-            captureSession.sessionPreset = .photo
-
-            let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: AVMediaType.video, position: AVCaptureDevice.Position.unspecified)
-
-            let devices = deviceDiscoverySession.devices
-            for device in devices {
-                if device.position == AVCaptureDevice.Position.back {
-                    currentDevice = self.cameraWithPosition(.front)!
-                } else if device.position == AVCaptureDevice.Position.front {
-                    currentDevice = self.cameraWithPosition(.back)!
-                }
-            }
-
-            guard let videoDevice = currentDevice else { return }
-            videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-
-            if captureSession.canAddInput(videoDeviceInput) { captureSession.addInput(videoDeviceInput) }
-
-            currentDevice = AVCaptureDevice.default(for: .audio)
-            let captureDeviceInput = try AVCaptureDeviceInput(device: currentDevice!)
-
-            if captureSession.canAddInput(captureDeviceInput) {
-                captureSession.addInput(captureDeviceInput)
-            } else {
-                print("Could not add audio device input to the session")
-            }
-        } catch {
-            print(error)
-        }
-        
-        if captureSession.canAddOutput(photoOutput) {
-            captureSession.addOutput(photoOutput)
-
-            photoOutput.isHighResolutionCaptureEnabled = true
-            photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
-            photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
-            photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
-            photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
-            photoOutput.maxPhotoQualityPrioritization = .quality
-            captureSession.commitConfiguration()
-        }
-
-        var newVideoDevice: AVCaptureDevice? = nil
-        let devices = self.videoDeviceDiscoverySession.devices
-        if let device = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera }) {
-            newVideoDevice  = device
-        } else if let device = devices.first(where: { $0.position == .front }) {
-            newVideoDevice = device
-        }
-
-        if let videoDevice = newVideoDevice {
-            do {
-                let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-                
-                self.captureSession.beginConfiguration()
-                self.captureSession.removeInput(self.videoDeviceInput)
-                
-                if self.captureSession.canAddInput(videoDeviceInput) {
-                    self.captureSession.addInput(videoDeviceInput)
-                    self.videoDeviceInput = videoDeviceInput
-                }
-                photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
-                photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
-                photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
-                photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
-                photoOutput.maxPhotoQualityPrioritization = .quality
-                photoQualityPrioritizationMode = .balanced
-                captureSession.commitConfiguration()
-            } catch {
-                print("Error occurred while creating video device input: \(error)")
-                
-            }
-        }
-    }
-
     func maskFilterBuiltins(_ bind: @escaping (_ image: UIImage?) -> Void ,photo: AVCapturePhoto ,ssmType: AVSemanticSegmentationMatte.MatteType, image: UIImage) {
 
         guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType),
@@ -155,19 +67,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
             segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
-        }
-        var imageOption: CIImageOption!
-
-        switch ssmType {
-        case .hair:
-            imageOption = .auxiliarySemanticSegmentationHairMatte
-        case .skin:
-            imageOption = .auxiliarySemanticSegmentationSkinMatte
-        case .teeth:
-            imageOption = .auxiliarySemanticSegmentationTeethMatte
-        default:
-            print("This semantic segmentation type is not supported!")
-            break
         }
 
         let maxcomp1 = CIFilter.maximumComponent()
@@ -190,7 +89,7 @@ class MaskFilterBuiltinsMatte: NSObject {
         gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
         makeup = gamma.outputImage
 
-        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [imageOption : true])
+        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
 
         let scale = CGAffineTransform(scaleX: base.extent.size.width / matte.extent.size.width,
                                       y: base.extent.size.height / matte.extent.size.height)
@@ -205,17 +104,14 @@ class MaskFilterBuiltinsMatte: NSObject {
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
 
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
-                               options: [imageOption: true,
+                               options: [.auxiliarySemanticSegmentationHairMatte: true,
                                          .colorSpace: perceptualColorSpace])
 
         guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
             let imagedata = context.pngRepresentation(of: outputImage,
                                                   format: .RGBA8,
                                                   colorSpace: linearColorSpace,
-                                                  options: [.semanticSegmentationSkinMatteImage : ciImage,
-                                                            .semanticSegmentationHairMatteImage : ciImage,
-                                                            .semanticSegmentationTeethMatteImage: ciImage,]) else { return }
-        
+                                                  options: [.semanticSegmentationHairMatteImage : ciImage,]) else { return }
         bind(UIImage(data: imagedata))
     }
 
@@ -297,6 +193,94 @@ class MaskFilterBuiltinsMatte: NSObject {
                                                       options: [ .semanticSegmentationHairMatteImage : ciImage,]) else { return }
 
         imageView.image = UIImage(data: imagedata)
+    }
+
+    private func setupPreviewLayer(_ view: UIView) {
+        self.cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        self.cameraPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        self.cameraPreviewLayer?.connection?.videoOrientation = AVCaptureVideoOrientation.portrait
+        self.cameraPreviewLayer?.frame = view.frame
+        view.layer.insertSublayer(self.cameraPreviewLayer ?? AVCaptureVideoPreviewLayer(), at: 0)
+    }
+
+    private func setupInputOutput() {
+        photoOutput = AVCapturePhotoOutput()
+        guard let photoOutput = photoOutput else { return }
+        do {
+            captureSession.beginConfiguration()
+            captureSession.sessionPreset = .photo
+
+            let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: AVMediaType.video, position: AVCaptureDevice.Position.unspecified)
+
+            let devices = deviceDiscoverySession.devices
+            for device in devices {
+                if device.position == AVCaptureDevice.Position.back {
+                    currentDevice = self.cameraWithPosition(.front)!
+                } else if device.position == AVCaptureDevice.Position.front {
+                    currentDevice = self.cameraWithPosition(.back)!
+                }
+            }
+
+            guard let videoDevice = currentDevice else { return }
+            videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
+
+            if captureSession.canAddInput(videoDeviceInput) { captureSession.addInput(videoDeviceInput) }
+
+            currentDevice = AVCaptureDevice.default(for: .audio)
+            let captureDeviceInput = try AVCaptureDeviceInput(device: currentDevice!)
+
+            if captureSession.canAddInput(captureDeviceInput) {
+                captureSession.addInput(captureDeviceInput)
+            } else {
+                print("Could not add audio device input to the session")
+            }
+        } catch {
+            print(error)
+        }
+        
+        if captureSession.canAddOutput(photoOutput) {
+            captureSession.addOutput(photoOutput)
+
+            photoOutput.isHighResolutionCaptureEnabled = true
+            photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+            photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
+            photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
+            photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
+            photoOutput.maxPhotoQualityPrioritization = .quality
+            captureSession.commitConfiguration()
+        }
+
+        var newVideoDevice: AVCaptureDevice? = nil
+        let devices = self.videoDeviceDiscoverySession.devices
+        if let device = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera }) {
+            newVideoDevice  = device
+        } else if let device = devices.first(where: { $0.position == .front }) {
+            newVideoDevice = device
+        }
+
+        if let videoDevice = newVideoDevice {
+            do {
+                let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
+                
+                self.captureSession.beginConfiguration()
+                self.captureSession.removeInput(self.videoDeviceInput)
+                
+                if self.captureSession.canAddInput(videoDeviceInput) {
+                    self.captureSession.addInput(videoDeviceInput)
+                    self.videoDeviceInput = videoDeviceInput
+                }
+                photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+                photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
+                photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
+                photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
+                photoOutput.maxPhotoQualityPrioritization = .quality
+                photoQualityPrioritizationMode = .balanced
+                captureSession.commitConfiguration()
+            } catch {
+                print("Error occurred while creating video device input: \(error)")
+                
+            }
+        }
     }
 }
 
