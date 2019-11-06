@@ -240,15 +240,10 @@ class MaskFilterBuiltinsMatte: NSObject {
             captureSession.commitConfiguration()
         }
 
-        var newVideoDevice: AVCaptureDevice? = nil
         let devices = self.videoDeviceDiscoverySession.devices
-        if let device = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera }) {
-            newVideoDevice  = device
-        } else if let device = devices.first(where: { $0.position == .front }) {
-            newVideoDevice = device
-        }
+        currentDevice = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera })
 
-        if let videoDevice = newVideoDevice {
+        if let videoDevice = currentDevice {
             do {
                 let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
                 
