@@ -24,8 +24,6 @@ class MaskFilterBuiltinsMatte: NSObject {
     private var based                   = CIImage()
     private var bView                   : ButtonView? = nil
     private var xibView                 : SliiderObjects? = nil
-    private var mainCamera              : AVCaptureDevice?
-    private var innerCamera             : AVCaptureDevice?
     private var currentDevice           : AVCaptureDevice?
     private var photoOutput             : AVCapturePhotoOutput?
     private var cameraPreviewLayer      : AVCaptureVideoPreviewLayer?

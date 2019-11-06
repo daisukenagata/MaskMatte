@@ -21,7 +21,7 @@ class TabBarController: UITabBarController {
         let item = UITabBarItem.appearance()
         item.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 0)
         item.setTitleTextAttributes([kCTFontAttributeName as NSAttributedString.Key: UIFont.systemFont(ofSize: 0)], for: .normal)
-        self.tabBar.frame.size = self.tabBar.sizeThatFits(CGSize(width: self.tabBar.frame.height, height: 100))
+        _ = self.tabBar.sizeThatFits(CGSize())
     }
 
 
