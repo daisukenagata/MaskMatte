@@ -21,7 +21,7 @@ class MaskFilterBuiltinsMatte: NSObject {
     private var videoDeviceInput        : AVCaptureDeviceInput!
     private var call                    = { (_ image: UIImage?) -> Void in }
     private var captureSession          = AVCaptureSession()
-    private var based                   : CIImage?
+    private var based                   = CIImage()
     private var mainCamera              : AVCaptureDevice?
     private var innerCamera             : AVCaptureDevice?
     private var currentDevice           : AVCaptureDevice?
@@ -169,8 +169,8 @@ class MaskFilterBuiltinsMatte: NSObject {
         makeup = gamma.outputImage
 
         var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
-        let scale = CGAffineTransform(scaleX: based?.extent.size.width ?? 0.0 / matte.extent.size.width,
-                                      y: based?.extent.size.height ?? 0.0 / matte.extent.size.height)
+        let scale = CGAffineTransform(scaleX: based.extent.size.width / matte.extent.size.width,
+                                      y: based.extent.size.height  / matte.extent.size.height)
         matte = matte.transformed( by: scale )
         
         let blend = CIFilter.blendWithMask()
@@ -209,17 +209,7 @@ class MaskFilterBuiltinsMatte: NSObject {
         do {
             captureSession.beginConfiguration()
             captureSession.sessionPreset = .photo
-
-            let deviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [AVCaptureDevice.DeviceType.builtInDualCamera], mediaType: AVMediaType.video, position: AVCaptureDevice.Position.unspecified)
-
-            let devices = deviceDiscoverySession.devices
-            for device in devices {
-                if device.position == AVCaptureDevice.Position.back {
-                    currentDevice = self.cameraWithPosition(.front)!
-                } else if device.position == AVCaptureDevice.Position.front {
-                    currentDevice = self.cameraWithPosition(.back)!
-                }
-            }
+            currentDevice = self.cameraWithPosition(.front)
 
             guard let videoDevice = currentDevice else { return }
             videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
