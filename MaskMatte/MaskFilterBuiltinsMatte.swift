@@ -14,15 +14,15 @@ import CoreImage.CIFilterBuiltins
 class MaskFilterBuiltinsMatte: NSObject {
 
     @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
-    var call               = { (_ image: UIImage?) -> Void in }
-    var based              : CIImage?
-    var captureSession     = AVCaptureSession()
-    var photos             : AVCapturePhoto?
-    var mainCamera         : AVCaptureDevice?
-    var innerCamera        : AVCaptureDevice?
-    var currentDevice      : AVCaptureDevice?
-    var photoOutput        : AVCapturePhotoOutput?
-    var cameraPreviewLayer : AVCaptureVideoPreviewLayer?
+    var call                    = { (_ image: UIImage?) -> Void in }
+    var captureSession          = AVCaptureSession()
+    var based                   : CIImage?
+    var photos                  : AVCapturePhoto?
+    var mainCamera              : AVCaptureDevice?
+    var innerCamera             : AVCaptureDevice?
+    var currentDevice           : AVCaptureDevice?
+    var photoOutput             : AVCapturePhotoOutput?
+    var cameraPreviewLayer      : AVCaptureVideoPreviewLayer?
     var semanticSegmentationType: AVSemanticSegmentationMatte.MatteType?
 
     lazy var context = CIContext()
