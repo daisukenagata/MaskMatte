@@ -66,7 +66,6 @@ class MaskFilterBuiltinsMatte: NSObject {
 
             segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
         }
-
         photos = photo
         based = base
 
@@ -114,7 +113,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         var makeup = maxcomp.outputImage
         let gamma = CIFilter.colorMatrix()
         gamma.inputImage = makeup1
-
         gamma.setValue(CIVector(x: 0, y: CGFloat(value2 ?? 1), z: 0, w: 0), forKey: "inputRVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value3 ?? 1), z: 0, w: 0), forKey: "inputGVector")
         gamma.setValue(CIVector(x: 0, y: CGFloat(value4 ?? 1), z: 0, w: 0), forKey: "inputBVector")
@@ -144,17 +142,17 @@ class MaskFilterBuiltinsMatte: NSObject {
                                                   format: .RGBA8,
                                                   colorSpace: linearColorSpace,
                                                   options: [.semanticSegmentationHairMatteImage : ciImage,]) else { return Data()}
-        
+
         return imagedata
     }
-    
+
     private func cameraWithPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {
         let deviceDescoverySession =
-            
+
             AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInWideAngleCamera],
                                                   mediaType: AVMediaType.video,
                                                   position: AVCaptureDevice.Position.unspecified)
-        
+
         for device in deviceDescoverySession.devices {
             if device.position == position {
                 return device
