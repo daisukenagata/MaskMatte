@@ -13,19 +13,20 @@ import CoreImage.CIFilterBuiltins
 @available(iOS 13.0, *)
 class MaskFilterBuiltinsMatte: NSObject {
 
-    @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
-    var call                    = { (_ image: UIImage?) -> Void in }
-    var captureSession          = AVCaptureSession()
-    var based                   : CIImage?
-    var photos                  : AVCapturePhoto?
-    var mainCamera              : AVCaptureDevice?
-    var innerCamera             : AVCaptureDevice?
-    var currentDevice           : AVCaptureDevice?
-    var photoOutput             : AVCapturePhotoOutput?
-    var cameraPreviewLayer      : AVCaptureVideoPreviewLayer?
-    var semanticSegmentationType: AVSemanticSegmentationMatte.MatteType?
-
     lazy var context = CIContext()
+
+    var photos                  : AVCapturePhoto?
+    var semanticSegmentationType: AVSemanticSegmentationMatte.MatteType?
+    
+    private var videoDeviceInput        : AVCaptureDeviceInput!
+    private var call                    = { (_ image: UIImage?) -> Void in }
+    private var captureSession          = AVCaptureSession()
+    private var based                   : CIImage?
+    private var mainCamera              : AVCaptureDevice?
+    private var innerCamera             : AVCaptureDevice?
+    private var currentDevice           : AVCaptureDevice?
+    private var photoOutput             : AVCapturePhotoOutput?
+    private var cameraPreviewLayer      : AVCaptureVideoPreviewLayer?
 
     private var photoQualityPrioritizationMode: AVCapturePhotoOutput.QualityPrioritization = .balanced
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
