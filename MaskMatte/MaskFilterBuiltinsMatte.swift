@@ -201,10 +201,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         blend.maskImage = matte
         let result = blend.outputImage
         guard let outputImage = result else { return }
-
-        
-        
-        
         guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
 
         let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
@@ -236,7 +232,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         }
         return nil
     }
-    
 
     func maskFilterBuiltinsChanges(value : Float,
                              value2: Float,
