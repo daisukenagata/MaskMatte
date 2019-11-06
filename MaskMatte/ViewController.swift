@@ -21,14 +21,6 @@ class ViewController: UIViewController {
         return vc
     }
 
-    init() {
-        super.init(nibName: "Main", bundle: Bundle.main)
-    }
-
-    required init?(coder aDecoder: NSCoder) {
-        super.init(coder: aDecoder)
-    }
-    
     private let maskPortraitMatte = MaskFilterBuiltinsMatte()
     
     private let xibView = SliiderObjects()
@@ -63,12 +55,12 @@ class ViewController: UIViewController {
             self.view.addSubview(self.xibView)
             }
         } else {
-            maskPortraitMatte.maskFilterBuiltinsChanges(value : xibView.sliderInputRVector.value,
-                                                        value2: xibView.sliderInputGVector.value,
-                                                        value3: xibView.sliderInputBVector.value,
-                                                        value4: xibView.sliderInputAVector.value,
-                                                        photo: maskPortraitMatte.photos,
-                                                        ssmType: maskPortraitMatte.semanticSegmentationType,
+            maskPortraitMatte.maskFilterBuiltinsChanges(value    : xibView.sliderInputRVector.value,
+                                                        value2   : xibView.sliderInputGVector.value,
+                                                        value3   : xibView.sliderInputBVector.value,
+                                                        value4   : xibView.sliderInputAVector.value,
+                                                        photo    : maskPortraitMatte.photos,
+                                                        ssmType  : maskPortraitMatte.semanticSegmentationType,
                                                         imageView: xibView.sliderImageView)
         }
     }
