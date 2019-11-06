@@ -61,20 +61,52 @@ class MaskFilterBuiltinsMatte: NSObject {
 
         guard var segmentationMatte = photo.semanticSegmentationMatte(for: ssmType),
             let base = CIImage(image: image.updateImageOrientionUpSide()) else { return }
-        photos = photo
-        based = base
-
         if let orientation = photo.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
             let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
+
             segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
         }
 
+        photos = photo
+        based = base
+
+        let imagedata = matteSetting(base: base, ssm: segmentationMatte)
+        print(imagedata)
+        bind(UIImage(data: imagedata))
+    }
+
+    func maskFilterBuiltinsChanges(value    : Float? = nil,
+                                   value2   : Float? = nil,
+                                   value3   : Float? = nil,
+                                   value4   : Float? = nil,
+                                   photo    : AVCapturePhoto?,
+                                   ssmType  : AVSemanticSegmentationMatte.MatteType?,
+                                   imageView: UIImageView) {
+
+        guard let ssmType = ssmType else { return }
+        guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
+        if let orientation = photo?.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
+            let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
+
+            segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
+        }
+        let base = based
+        let imagedata = matteSetting(value: value, value2: value2, value3: value3, value4: value4, base: base, ssm: segmentationMatte)
+        imageView.image = UIImage(data: imagedata)
+    }
+
+    func matteSetting(value    : Float? = nil,
+                      value2   : Float? = nil,
+                      value3   : Float? = nil,
+                      value4   : Float? = nil,
+                      base     : CIImage,
+                      ssm      : AVSemanticSegmentationMatte) -> Data {
         let maxcomp1 = CIFilter.maximumComponent()
         maxcomp1.inputImage = base
         var makeup1 = maxcomp1.outputImage
         let gamma1 = CIFilter.gammaAdjust()
         gamma1.inputImage = base
-        gamma1.power = 0.65
+        gamma1.power = value ?? 0.65
         makeup1 = gamma1.outputImage
 
         let maxcomp = CIFilter.maximumComponent()
@@ -83,13 +115,13 @@ class MaskFilterBuiltinsMatte: NSObject {
         let gamma = CIFilter.colorMatrix()
         gamma.inputImage = makeup1
 
-        gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputRVector")
-        gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputGVector")
-        gamma.setValue(CIVector(x: 0, y: 1, z: 0, w: 0), forKey: "inputBVector")
+        gamma.setValue(CIVector(x: 0, y: CGFloat(value2 ?? 1), z: 0, w: 0), forKey: "inputRVector")
+        gamma.setValue(CIVector(x: 0, y: CGFloat(value3 ?? 1), z: 0, w: 0), forKey: "inputGVector")
+        gamma.setValue(CIVector(x: 0, y: CGFloat(value4 ?? 1), z: 0, w: 0), forKey: "inputBVector")
         gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
         makeup = gamma.outputImage
 
-        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
+        var matte = CIImage(cvImageBuffer: ssm.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
 
         let scale = CGAffineTransform(scaleX: base.extent.size.width / matte.extent.size.width,
                                       y: base.extent.size.height / matte.extent.size.height)
@@ -100,10 +132,10 @@ class MaskFilterBuiltinsMatte: NSObject {
         blend.inputImage = makeup
         blend.maskImage = matte
         let result = blend.outputImage
-        guard let outputImage = result else { return }
-        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
+        guard let outputImage = result else { return Data()}
+        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return Data()}
 
-        let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
+        let ciImage = CIImage( cvImageBuffer: ssm.mattingImage,
                                options: [.auxiliarySemanticSegmentationHairMatte: true,
                                          .colorSpace: perceptualColorSpace])
 
@@ -111,11 +143,12 @@ class MaskFilterBuiltinsMatte: NSObject {
             let imagedata = context.pngRepresentation(of: outputImage,
                                                   format: .RGBA8,
                                                   colorSpace: linearColorSpace,
-                                                  options: [.semanticSegmentationHairMatteImage : ciImage,]) else { return }
-        bind(UIImage(data: imagedata))
+                                                  options: [.semanticSegmentationHairMatteImage : ciImage,]) else { return Data()}
+        
+        return imagedata
     }
-
-    func cameraWithPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+    
+    private func cameraWithPosition(_ position: AVCaptureDevice.Position) -> AVCaptureDevice? {
         let deviceDescoverySession =
             
             AVCaptureDevice.DiscoverySession.init(deviceTypes: [AVCaptureDevice.DeviceType.builtInWideAngleCamera],
@@ -128,71 +161,6 @@ class MaskFilterBuiltinsMatte: NSObject {
             }
         }
         return nil
-    }
-
-    func maskFilterBuiltinsChanges(value : Float,
-                             value2: Float,
-                             value3: Float,
-                             value4: Float,
-                             photo: AVCapturePhoto?,
-                             ssmType: AVSemanticSegmentationMatte.MatteType?,
-                             imageView: UIImageView) {
-
-        guard let ssmType = ssmType else { return }
-        guard var segmentationMatte = photo?.semanticSegmentationMatte(for: ssmType) else { return }
-        let base = based
-
-        if let orientation = photo?.metadata[String(kCGImagePropertyOrientation)] as? UInt32,
-            let exifOrientation = CGImagePropertyOrientation(rawValue: orientation) {
-
-            segmentationMatte = segmentationMatte.applyingExifOrientation(exifOrientation)
-        }
-
-        let maxcomp1 = CIFilter.maximumComponent()
-        maxcomp1.inputImage = base
-        var makeup1 = maxcomp1.outputImage
-        let gamma1 = CIFilter.gammaAdjust()
-        gamma1.inputImage = base
-        gamma1.power = value
-        makeup1 = gamma1.outputImage
-
-        let maxcomp = CIFilter.maximumComponent()
-        maxcomp.inputImage = makeup1
-        var makeup = maxcomp.outputImage
-        let gamma = CIFilter.colorMatrix()
-        gamma.inputImage = makeup1
-
-        gamma.setValue(CIVector(x: 0, y: CGFloat(value2), z: 0, w: 0), forKey: "inputRVector")
-        gamma.setValue(CIVector(x: 0, y: CGFloat(value3), z: 0, w: 0), forKey: "inputGVector")
-        gamma.setValue(CIVector(x: 0, y: CGFloat(value4), z: 0, w: 0), forKey: "inputBVector")
-        gamma.setValue(CIVector(x: 0, y: 0, z: 0, w: 1), forKey: "inputAVector")
-        makeup = gamma.outputImage
-
-        var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
-        let scale = CGAffineTransform(scaleX: based.extent.size.width / matte.extent.size.width,
-                                      y: based.extent.size.height  / matte.extent.size.height)
-        matte = matte.transformed( by: scale )
-        
-        let blend = CIFilter.blendWithMask()
-        blend.backgroundImage = base
-        blend.inputImage = makeup
-        blend.maskImage = matte
-        let result = blend.outputImage
-
-        guard let outputImage = result else { return }
-        guard let perceptualColorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return }
-
-        let ciImage = CIImage( cvImageBuffer: segmentationMatte.mattingImage,
-                               options: [.auxiliarySemanticSegmentationHairMatte: true,
-                                         .colorSpace: perceptualColorSpace])
-
-        guard let linearColorSpace = CGColorSpace(name: CGColorSpace.linearSRGB),
-            let imagedata = context.pngRepresentation(of: outputImage,
-                                                      format: .RGBA8,
-                                                      colorSpace: linearColorSpace,
-                                                      options: [ .semanticSegmentationHairMatteImage : ciImage,]) else { return }
-
-        imageView.image = UIImage(data: imagedata)
     }
 
     private func setupPreviewLayer(_ view: UIView) {
@@ -222,13 +190,6 @@ class MaskFilterBuiltinsMatte: NSObject {
 
             if captureSession.canAddInput(captureDeviceInput) {
                 captureSession.addInput(captureDeviceInput)
-                
-                photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
-                photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
-                photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
-                photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
-                photoOutput.maxPhotoQualityPrioritization = .quality
-                photoQualityPrioritizationMode = .balanced
             } else {
                 print("Could not add audio device input to the session")
             }
