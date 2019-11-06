@@ -12,12 +12,6 @@ import AVFoundation
 
 class ViewController: UIViewController {
 
-    let maskPortraitMatte = MaskFilterBuiltinsMatte()
-
-    var callBack = { () -> Void in }
-
-    let xibView = SliiderObjects()
-
     static func identifier() -> String { return String(describing: ViewController.self) }
 
     static func viewController() -> ViewController {
@@ -34,14 +28,17 @@ class ViewController: UIViewController {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
+    
+   private let maskPortraitMatte = MaskFilterBuiltinsMatte()
+
+   private let xibView = SliiderObjects()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        setupCaptureSession()
-        setupInputOutput()
-        setupPreviewLayer()
-        maskPortraitMatte.captureSession.startRunning()
+        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
+        view.addSubview(d)
+        maskPortraitMatte.setMaskFilter(view: d)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -74,18 +71,5 @@ class ViewController: UIViewController {
                                                         ssmType: maskPortraitMatte.semanticSegmentationType,
                                                         imageView: xibView.sliderImageView)
         }
-    }
-}
-
-extension ViewController{
-
-    func setupCaptureSession() { maskPortraitMatte.captureSession.sessionPreset = AVCaptureSession.Preset.photo }
-
-    func setupInputOutput() { maskPortraitMatte.setupInputOutput() }
-
-    func setupPreviewLayer() {
-        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
-        view.addSubview(d)
-        maskPortraitMatte.setupPreviewLayer(d)
     }
 }

@@ -31,6 +31,13 @@ class MaskFilterBuiltinsMatte: NSObject {
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
                                                                                   mediaType: .video, position: .unspecified)
 
+    func setMaskFilter(view: UIView) {
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+        setupInputOutput()
+        setupPreviewLayer(view)
+        captureSession.startRunning()
+    }
+
     func setupPreviewLayer(_ view: UIView) {
         self.cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
         self.cameraPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
