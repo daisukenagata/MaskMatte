@@ -209,7 +209,8 @@ class MaskFilterBuiltinsMatte: NSObject {
         do {
             captureSession.beginConfiguration()
             captureSession.sessionPreset = .photo
-            currentDevice = self.cameraWithPosition(.front)
+            let devices = self.videoDeviceDiscoverySession.devices
+            currentDevice = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera })
 
             guard let videoDevice = currentDevice else { return }
             videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
@@ -221,6 +222,13 @@ class MaskFilterBuiltinsMatte: NSObject {
 
             if captureSession.canAddInput(captureDeviceInput) {
                 captureSession.addInput(captureDeviceInput)
+                
+                photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
+                photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
+                photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
+                photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
+                photoOutput.maxPhotoQualityPrioritization = .quality
+                photoQualityPrioritizationMode = .balanced
             } else {
                 print("Could not add audio device input to the session")
             }
@@ -238,33 +246,6 @@ class MaskFilterBuiltinsMatte: NSObject {
             photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
             photoOutput.maxPhotoQualityPrioritization = .quality
             captureSession.commitConfiguration()
-        }
-
-        let devices = self.videoDeviceDiscoverySession.devices
-        currentDevice = devices.first(where: { $0.position == .front && $0.deviceType == .builtInTrueDepthCamera })
-
-        if let videoDevice = currentDevice {
-            do {
-                let videoDeviceInput = try AVCaptureDeviceInput(device: videoDevice)
-                
-                self.captureSession.beginConfiguration()
-                self.captureSession.removeInput(self.videoDeviceInput)
-                
-                if self.captureSession.canAddInput(videoDeviceInput) {
-                    self.captureSession.addInput(videoDeviceInput)
-                    self.videoDeviceInput = videoDeviceInput
-                }
-                photoOutput.isLivePhotoCaptureEnabled = photoOutput.isLivePhotoCaptureSupported
-                photoOutput.isDepthDataDeliveryEnabled = photoOutput.isDepthDataDeliverySupported
-                photoOutput.isPortraitEffectsMatteDeliveryEnabled = photoOutput.isPortraitEffectsMatteDeliverySupported
-                photoOutput.enabledSemanticSegmentationMatteTypes = photoOutput.availableSemanticSegmentationMatteTypes
-                photoOutput.maxPhotoQualityPrioritization = .quality
-                photoQualityPrioritizationMode = .balanced
-                captureSession.commitConfiguration()
-            } catch {
-                print("Error occurred while creating video device input: \(error)")
-                
-            }
         }
     }
 }
