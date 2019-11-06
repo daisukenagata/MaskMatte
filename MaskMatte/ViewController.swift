@@ -24,33 +24,21 @@ class ViewController: UIViewController {
     private let maskPortraitMatte = MaskFilterBuiltinsMatte()
     
     private let xibView = SliiderObjects()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
-        view.addSubview(d)
-        maskPortraitMatte.setMaskFilter(view: d)
-    }
+
+    private var bView: ButtonView? = nil
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
 
-        let bt = UIButton()
-        bt.frame = CGRect(x: (self.tabBarController?.tabBar.frame.width ?? 0.0) / 2 - 75,
-                          y: (self.tabBarController?.tabBar.frame.height ?? 0.0) / 2 - 25, width: 50, height: 50)
-        bt.backgroundColor = .red
-        self.tabBarController?.tabBar.addSubview(bt)
-        bt.layer.cornerRadius = bt.frame.height/2
-        bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
-        
-        let bt2 = UIButton()
-        bt2.frame = CGRect(x: (self.tabBarController?.tabBar.frame.width ?? 0.0) / 2 + 25,
-                          y: (self.tabBarController?.tabBar.frame.height ?? 0.0) / 2 - 25, width: 50, height: 50)
-        bt2.backgroundColor = .blue
-        self.tabBarController?.tabBar.addSubview(bt2)
-        bt2.layer.cornerRadius = bt2.frame.height/2
-        bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
+        bView = ButtonView(frame: self.tabBarController?.tabBar.frame ?? CGRect())
+        let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
+        view.addSubview(d)
+        self.tabBarController?.tabBar.addSubview(bView?.bt ?? UIButton())
+        self.tabBarController?.tabBar.addSubview(bView?.bt2 ?? UIButton())
+        maskPortraitMatte.setMaskFilter(view: d)
+
+        bView?.bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
+        bView?.bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
     }
 
     @objc func btAction() {

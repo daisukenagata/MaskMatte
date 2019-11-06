@@ -17,6 +17,7 @@
 		BB568E34236E9F7C00EB38F5 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB568E32236E9F7C00EB38F5 /* Main.storyboard */; };
 		BB568E36236E9F8000EB38F5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB568E35236E9F8000EB38F5 /* Assets.xcassets */; };
 		BB568E39236E9F8000EB38F5 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BB568E37236E9F8000EB38F5 /* LaunchScreen.storyboard */; };
+		BB5BEA0A2372AFC40021F530 /* ButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5BEA092372AFC40021F530 /* ButtonView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		BB568E35236E9F8000EB38F5 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BB568E38236E9F8000EB38F5 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BB568E3A236E9F8000EB38F5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BB5BEA092372AFC40021F530 /* ButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ButtonView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,7 @@
 				BB568E2C236E9F7C00EB38F5 /* AppDelegate.swift */,
 				BB568E2E236E9F7C00EB38F5 /* SceneDelegate.swift */,
 				BB568E30236E9F7C00EB38F5 /* ViewController.swift */,
+				BB5BEA092372AFC40021F530 /* ButtonView.swift */,
 				BB4B1A632371004500242644 /* MaskFilterBuiltinsMatte.swift */,
 				BB4B1A7323714C7500242644 /* TabBarController.swift */,
 				BB4B1A6F23714C6900242644 /* SliiderObjects.swift */,
@@ -157,6 +160,7 @@
 				BB4B1A7423714C7500242644 /* TabBarController.swift in Sources */,
 				BB568E2F236E9F7C00EB38F5 /* SceneDelegate.swift in Sources */,
 				BB4B1A642371004500242644 /* MaskFilterBuiltinsMatte.swift in Sources */,
+				BB5BEA0A2372AFC40021F530 /* ButtonView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
