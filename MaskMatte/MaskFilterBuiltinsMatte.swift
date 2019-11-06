@@ -15,7 +15,7 @@ class MaskFilterBuiltinsMatte: NSObject {
 
     @objc dynamic var videoDeviceInput: AVCaptureDeviceInput!
     var call               = { (_ image: UIImage?) -> Void in }
-    var based              = CIImage()
+    var based              : CIImage?
     var captureSession     = AVCaptureSession()
     var photos             : AVCapturePhoto?
     var mainCamera         : AVCaptureDevice?
@@ -277,8 +277,8 @@ class MaskFilterBuiltinsMatte: NSObject {
         makeup = gamma.outputImage
 
         var matte = CIImage(cvImageBuffer: segmentationMatte.mattingImage, options: [.auxiliarySemanticSegmentationHairMatte : true])
-        let scale = CGAffineTransform(scaleX: based.extent.size.width / matte.extent.size.width,
-                                      y: based.extent.size.height / matte.extent.size.height)
+        let scale = CGAffineTransform(scaleX: based?.extent.size.width ?? 0.0 / matte.extent.size.width,
+                                      y: based?.extent.size.height ?? 0.0 / matte.extent.size.height)
         matte = matte.transformed( by: scale )
         
         let blend = CIFilter.blendWithMask()

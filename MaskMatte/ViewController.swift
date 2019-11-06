@@ -29,13 +29,13 @@ class ViewController: UIViewController {
         super.init(coder: aDecoder)
     }
     
-   private let maskPortraitMatte = MaskFilterBuiltinsMatte()
-
-   private let xibView = SliiderObjects()
-
+    private let maskPortraitMatte = MaskFilterBuiltinsMatte()
+    
+    private let xibView = SliiderObjects()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
         view.addSubview(d)
         maskPortraitMatte.setMaskFilter(view: d)
