@@ -37,12 +37,20 @@ class ViewController: UIViewController {
         super.viewDidAppear(true)
 
         let bt = UIButton()
-        bt.frame = CGRect(x: (self.tabBarController?.tabBar.frame.width ?? 0.0) / 2 - 25,
+        bt.frame = CGRect(x: (self.tabBarController?.tabBar.frame.width ?? 0.0) / 2 - 75,
                           y: (self.tabBarController?.tabBar.frame.height ?? 0.0) / 2 - 25, width: 50, height: 50)
         bt.backgroundColor = .red
         self.tabBarController?.tabBar.addSubview(bt)
         bt.layer.cornerRadius = bt.frame.height/2
         bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
+        
+        let bt2 = UIButton()
+        bt2.frame = CGRect(x: (self.tabBarController?.tabBar.frame.width ?? 0.0) / 2 + 25,
+                          y: (self.tabBarController?.tabBar.frame.height ?? 0.0) / 2 - 25, width: 50, height: 50)
+        bt2.backgroundColor = .blue
+        self.tabBarController?.tabBar.addSubview(bt2)
+        bt2.layer.cornerRadius = bt2.frame.height/2
+        bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
     }
 
     @objc func btAction() {
@@ -63,5 +71,9 @@ class ViewController: UIViewController {
                                                         ssmType  : maskPortraitMatte.semanticSegmentationType,
                                                         imageView: xibView.sliderImageView)
         }
+    }
+    
+    @objc func cameraAction() {
+        maskPortraitMatte.uIImageWriteToSavedPhotosAlbum(imageView: xibView.sliderImageView)
     }
 }
