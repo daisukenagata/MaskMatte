@@ -31,6 +31,29 @@ class MaskFilterBuiltinsMatte: NSObject {
     private let videoDeviceDiscoverySession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera, .builtInDualCamera, .builtInTrueDepthCamera],
                                                                                   mediaType: .video, position: .unspecified)
 
+    private var bView: ButtonView? = nil
+    var xibView: SliiderObjects? = nil
+
+    func btAction(view: UIView) {
+        if self.xibView?.sliderImageView.image == nil {
+            cameraAction { image in
+                self.xibView = SliiderObjects()
+                self.xibView?.frame = view.frame
+                self.xibView?.sliderImageView.contentMode = .scaleAspectFit
+                self.xibView?.sliderImageView.image = image
+                view.addSubview(self.xibView ?? SliiderObjects())
+            }
+        } else {
+            maskFilterBuiltinsChanges(value    : xibView?.sliderInputRVector.value,
+                                      value2   : xibView?.sliderInputGVector.value,
+                                      value3   : xibView?.sliderInputBVector.value,
+                                      value4   : xibView?.sliderInputAVector.value,
+                                      photo    : photos,
+                                      ssmType  : semanticSegmentationType,
+                                      imageView: xibView?.sliderImageView ?? UIImageView())
+        }
+    }
+
     func setMaskFilter(view: UIView) {
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
         setupInputOutput()

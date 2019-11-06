@@ -23,18 +23,16 @@ class ViewController: UIViewController {
 
     private let maskPortraitMatte = MaskFilterBuiltinsMatte()
 
-    private var xibView: SliiderObjects? = nil
-
     private var bView: ButtonView? = nil
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(true)
 
-        xibView = SliiderObjects()
         bView = ButtonView(frame: self.tabBarController?.tabBar.frame ?? CGRect())
 
         let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
         view.addSubview(d)
+
         self.tabBarController?.tabBar.addSubview(bView?.bt ?? UIButton())
         self.tabBarController?.tabBar.addSubview(bView?.bt2 ?? UIButton())
         maskPortraitMatte.setMaskFilter(view: d)
@@ -43,27 +41,7 @@ class ViewController: UIViewController {
         bView?.bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
     }
 
-    @objc func btAction() {
-        if self.xibView?.sliderImageView.image == nil {
-        maskPortraitMatte.cameraAction { image in
-            self.xibView?.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: self.view.frame.height)
-            self.xibView?.sliderImageView.contentMode = .scaleAspectFit
-            self.xibView?.sliderImageView.image = image
-            self.xibView?.sliderImageView.frame.origin.y = 0
-            self.view.addSubview(self.xibView ?? ButtonView())
-            }
-        } else {
-            maskPortraitMatte.maskFilterBuiltinsChanges(value    : xibView?.sliderInputRVector.value,
-                                                        value2   : xibView?.sliderInputGVector.value,
-                                                        value3   : xibView?.sliderInputBVector.value,
-                                                        value4   : xibView?.sliderInputAVector.value,
-                                                        photo    : maskPortraitMatte.photos,
-                                                        ssmType  : maskPortraitMatte.semanticSegmentationType,
-                                                        imageView: xibView?.sliderImageView ?? UIImageView())
-        }
-    }
+    @objc func btAction() { maskPortraitMatte.btAction(view: self.view) }
 
-    @objc func cameraAction() {
-        maskPortraitMatte.uIImageWriteToSavedPhotosAlbum(imageView: xibView?.sliderImageView ?? UIImageView())
-    }
+    @objc func cameraAction() { maskPortraitMatte.uIImageWriteToSavedPhotosAlbum(imageView: maskPortraitMatte.xibView?.sliderImageView ?? UIImageView()) }
 }
