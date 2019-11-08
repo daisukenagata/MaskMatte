@@ -9,9 +9,9 @@
 import UIKit
 
 class SliiderObjects: UIView, UIGestureRecognizerDelegate {
-    
+
     @IBOutlet weak var sliderImageView: UIImageView!
-    
+
     @IBOutlet weak var sliderView: UIStackView!
 
     @IBOutlet weak var sliderInputRVector: UISlider!{
@@ -36,9 +36,9 @@ class SliiderObjects: UIView, UIGestureRecognizerDelegate {
     }
 
     private var panGesture = UIPanGestureRecognizer()
-    
+
     private var height: CGFloat = 0
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -75,7 +75,6 @@ class SliiderObjects: UIView, UIGestureRecognizerDelegate {
     }
 
     private func pGesture() {
-
         panGesture = UIPanGestureRecognizer(target: self, action:#selector(panTapped(sender:)))
         panGesture.delegate = self
         self.addGestureRecognizer(panGesture)
@@ -109,13 +108,13 @@ class SliiderObjects: UIView, UIGestureRecognizerDelegate {
         @unknown default: break
         }
     }
-    
+
     @IBAction func sliderInputRVector(_ sender: UISlider) { sliderInputRVector.value = sender.value }
-    
+
     @IBAction func sliderInputGVector(_ sender: UISlider) { sliderInputGVector.value = sender.value }
-    
+
     @IBAction func sliderInputBVector(_ sender: UISlider) { sliderInputBVector.value = sender.value }
-    
+
     @IBAction func sliderInputAVector(_ sender: UISlider) { sliderInputAVector.value = sender.value }
 
 }
