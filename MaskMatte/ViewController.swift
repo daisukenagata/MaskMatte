@@ -36,6 +36,7 @@ class ViewController: UIViewController {
 
         bView?.bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
         bView?.bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
+        bView?.bt3.addTarget(self, action: #selector(viewAnimation), for: .touchUpInside)
 
         view.addSubview(d)
         maskPortraitMatte?.setMaskFilter(view: d)
@@ -44,4 +45,6 @@ class ViewController: UIViewController {
     @objc func btAction() { maskPortraitMatte?.btAction(view: self.view) }
 
     @objc func cameraAction() { maskPortraitMatte?.uIImageWriteToSavedPhotosAlbum() }
+    
+    @objc func viewAnimation() { maskPortraitMatte?.returnAnimation(height: tabBarController?.tabBar.frame.height ?? 0.0) }
 }

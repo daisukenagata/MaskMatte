@@ -38,6 +38,10 @@ class MaskFilterBuiltinsMatte: NSObject {
         captureSession.startRunning()
     }
 
+    func returnAnimation(height: CGFloat) {
+        xibView?.returnAnimation(tabHeight: height)
+    }
+
     func btAction(view: UIView) {
         if self.xibView?.sliderImageView.image == nil {
             cameraAction { image in
