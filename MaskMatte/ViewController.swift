@@ -31,20 +31,18 @@ class ViewController: UIViewController {
         bView = ButtonView(frame: self.tabBarController?.tabBar.frame ?? CGRect())
         let d = UIView(frame: CGRect(x: 0, y: 44, width: self.view.frame.width, height: self.view.frame.height - 188))
 
-        self.tabBarController?.tabBar.addSubview(bView?.bt ?? UIButton())
-        self.tabBarController?.tabBar.addSubview(bView?.bt2 ?? UIButton())
+        self.tabBarController?.tabBar.addSubview(bView?.cameraMatte ?? UIButton())
+        self.tabBarController?.tabBar.addSubview(bView?.cameraRecord ?? UIButton())
 
-        bView?.bt.addTarget(self, action: #selector(btAction), for: .touchUpInside)
-        bView?.bt2.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
-        bView?.bt3.addTarget(self, action: #selector(viewAnimation), for: .touchUpInside)
+        bView?.cameraMatte.addTarget(self, action: #selector(btAction), for: .touchUpInside)
+        bView?.cameraRecord.addTarget(self, action: #selector(cameraAction), for: .touchUpInside)
 
         view.addSubview(d)
         maskPortraitMatte?.setMaskFilter(view: d)
     }
 
-    @objc func btAction() { maskPortraitMatte?.btAction(view: self.view) }
+    @objc func btAction() { maskPortraitMatte?.btAction(view: self.view ?? UIView(), tabHeight:  self.tabBarController?.tabBar.frame.height ?? 0.0) }
 
     @objc func cameraAction() { maskPortraitMatte?.uIImageWriteToSavedPhotosAlbum() }
-    
-    @objc func viewAnimation() { maskPortraitMatte?.returnAnimation(height: tabBarController?.tabBar.frame.height ?? 0.0) }
+
 }

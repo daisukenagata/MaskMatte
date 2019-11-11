@@ -38,18 +38,18 @@ class MaskFilterBuiltinsMatte: NSObject {
         captureSession.startRunning()
     }
 
-    func returnAnimation(height: CGFloat) {
-        xibView?.returnAnimation(tabHeight: height)
+    func returnAnimation() {
+        xibView?.returnAnimation()
     }
 
-    func btAction(view: UIView) {
+    func btAction(view: UIView, tabHeight: CGFloat) {
         if self.xibView?.sliderImageView.image == nil {
             cameraAction { image in
-                self.xibView = SliiderObjects()
+                self.xibView = SliiderObjects(frameHight: 100)
                 self.xibView?.frame = view.frame
                 self.xibView?.sliderImageView.contentMode = .scaleAspectFit
                 self.xibView?.sliderImageView.image = image
-                view.addSubview(self.xibView ?? SliiderObjects())
+                view.addSubview(self.xibView ?? SliiderObjects(frameHight: tabHeight))
             }
         } else {
             maskFilterBuiltinsChanges(value    : xibView?.sliderInputRVector.value,
