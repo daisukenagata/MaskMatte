@@ -69,7 +69,6 @@ class MaskFilterBuiltinsMatte: NSObject {
         settings.isHighResolutionPhotoEnabled = true
         settings.previewPhotoFormat = [kCVPixelBufferPixelFormatTypeKey as String: settings.__availablePreviewPhotoPixelFormatTypes.first!]
         settings.isDepthDataDeliveryEnabled = true
-        settings.isDepthDataDeliveryEnabled = true
         settings.isPortraitEffectsMatteDeliveryEnabled = true
         if !(self.photoOutput?.enabledSemanticSegmentationMatteTypes.isEmpty)! {
             settings.enabledSemanticSegmentationMatteTypes = self.photoOutput?.enabledSemanticSegmentationMatteTypes ?? [AVSemanticSegmentationMatte.MatteType]()
